@@ -80,9 +80,9 @@ export function useFinanceData() {
     await loadData();
   };
 
-  const removeIncome = async (id: string) => {
+  const removeIncome = async (income: Income) => {
     if (!user?.uid) return;
-    await deleteIncome(user.uid, id);
+    await deleteIncome(user.uid, income.id, income.accountId, income.amount);
     await loadData();
   };
 
@@ -104,9 +104,9 @@ export function useFinanceData() {
     await loadData();
   };
 
-  const removeExpense = async (id: string) => {
+  const removeExpense = async (expense: Expense) => {
     if (!user?.uid) return;
-    await deleteExpense(user.uid, id);
+    await deleteExpense(user.uid, expense.id, expense.accountId, expense.amount);
     await loadData();
   };
 

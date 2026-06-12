@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Wallet, Receipt, PieChart, Settings, Activity } from "lucide-react";
+import { LayoutDashboard, Wallet, Receipt, PieChart, Settings, Activity, Building2, ArrowRightLeft, Tags } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { name: "แดชบอร์ด", href: "/", icon: LayoutDashboard },
+  { name: "บัญชีของฉัน", href: "/finance/accounts", icon: Building2 },
+  { name: "โอนเงิน", href: "/finance/transfers", icon: ArrowRightLeft },
   { name: "รายรับ", href: "/finance/income", icon: Wallet },
   { name: "รายจ่าย", href: "/finance/expenses", icon: Receipt },
+  { name: "หมวดหมู่", href: "/finance/categories", icon: Tags },
   { name: "สรุปรายเดือน", href: "/finance/summary", icon: PieChart },
   { name: "ตั้งค่า", href: "/finance/settings", icon: Settings },
 ];

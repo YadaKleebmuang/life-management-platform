@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useFinanceData } from "../hooks/useFinanceData";
+import { useAccounts } from "../hooks/useAccounts";
+import { useCategories } from "../hooks/useCategories";
 import { formatCurrency, formatDateThai } from "../utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,10 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Trash2, Edit2 } from "lucide-react";
 
 export function ExpenseList() {
-  const { expenses, addExpense, removeExpense, updateExpense, loading } = useFinanceData();
+  const { expenses, addExpense, removeExpense, updateExpense, loading: financeLoading } = useFinanceData();
+  const { activeAccounts, loading: accountsLoading } = useAccounts();
+  const { activeExpenseCategories, loading: categoriesLoading } = useCategories();
+  
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
+  const [accountId, setAccountId] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [category, setCategory] = useState("อาหาร");
   const [note, setNote] = useState("");
   const [success, setSuccess] = useState(false);
@@ -21,7 +28,7 @@ export function ExpenseList() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !amount || !category) return;
+    if (!title || !amount || !accountId) return;
 
     setSaving(true);
     try {
@@ -33,7 +40,9 @@ export function ExpenseList() {
             date,
             title,
             amount: parseFloat(amount),
-            category,
+            category: category || "Other",
+            accountId: existingExpense.accountId,
+            categoryId,
             note,
           });
         }
@@ -43,7 +52,9 @@ export function ExpenseList() {
           date,
           title,
           amount: parseFloat(amount),
-          category,
+          category: category || "Other",
+          accountId,
+          categoryId,
           note,
         });
       }
@@ -66,7 +77,9 @@ export function ExpenseList() {
     setDate(expense.date);
     setTitle(expense.title);
     setAmount(expense.amount.toString());
-    setCategory(expense.category);
+    setAccountId(expense.accountId || "");
+    setCategoryId(expense.categoryId || "");
+    setCategory(expense.category || "อาหาร");
     setNote(expense.note || "");
   };
 
@@ -75,8 +88,22 @@ export function ExpenseList() {
     setDate(new Date().toISOString().split("T")[0]);
     setTitle("");
     setAmount("");
+    setAccountId("");
+    setCategoryId("");
     setCategory("อาหาร");
     setNote("");
+  };
+
+  const getCategoryName = (catId?: string, fallbackCat?: string) => {
+    if (!catId) return fallbackCat || "-";
+    const cat = activeExpenseCategories.find(c => c.id === catId);
+    return cat ? cat.name : (fallbackCat || "-");
+  };
+
+  const getAccountName = (accId?: string) => {
+    if (!accId) return "-";
+    const acc = activeAccounts.find(a => a.id === accId);
+    return acc ? acc.accountName : "ไม่ระบุบัญชี";
   };
 
   return (
@@ -100,18 +127,32 @@ export function ExpenseList() {
               <Input type="number" min="0" step="0.01" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} required />
             </div>
             <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">บัญชีจ่ายเงิน *</label>
+              <select
+                className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                required
+                disabled={!!editingId}
+              >
+                <option value="" disabled>เลือกบัญชี</option>
+                {activeAccounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>{acc.accountName}</option>
+                ))}
+              </select>
+              {editingId && <p className="text-xs text-gray-500">ไม่สามารถเปลี่ยนบัญชีได้ หากต้องการเปลี่ยนให้ลบแล้วเพิ่มใหม่</p>}
+            </div>
+            <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">หมวดหมู่</label>
               <select
-                className="flex h-10 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 shadow-sm"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
               >
-                <option value="อาหาร">อาหาร</option>
-                <option value="เดินทาง">เดินทาง</option>
-                <option value="ช้อปปิ้ง">ช้อปปิ้ง</option>
-                <option value="บันเทิง">บันเทิง</option>
-                <option value="สาธารณูปโภค">สาธารณูปโภค</option>
-                <option value="อื่นๆ">อื่นๆ</option>
+                <option value="">เลือกหมวดหมู่...</option>
+                {activeExpenseCategories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
               </select>
             </div>
             <div className="md:col-span-2 space-y-2">
@@ -149,37 +190,39 @@ export function ExpenseList() {
                 <tr>
                   <th className="px-4 py-3 font-semibold">วันที่</th>
                   <th className="px-4 py-3 font-semibold">รายการ</th>
-                  <th className="px-4 py-3 font-semibold">หมวดหมู่</th>
+                  <th className="px-4 py-3 font-semibold hidden md:table-cell">หมวดหมู่</th>
+                  <th className="px-4 py-3 font-semibold">บัญชี</th>
                   <th className="px-4 py-3 font-semibold text-right">จำนวนเงิน</th>
                   <th className="px-4 py-3 font-semibold text-center w-16">จัดการ</th>
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
+                {financeLoading || accountsLoading || categoriesLoading ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                       กำลังโหลดข้อมูล...
                     </td>
                   </tr>
                 ) : expenses.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                       ยังไม่มีข้อมูลรายจ่าย
                     </td>
                   </tr>
                 ) : (
                   expenses.map((expense) => (
-                    <tr key={expense.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-gray-600">{formatDateThai(expense.date)}</td>
-                      <td className="px-4 py-3 font-medium text-gray-900">
+                    <tr key={expense.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 text-gray-900">{new Date(expense.date).toLocaleDateString("th-TH")}</td>
+                      <td className="px-4 py-3 text-gray-900">
                         {expense.title}
-                        {expense.note && <div className="text-xs text-gray-500 font-normal mt-0.5">{expense.note}</div>}
+                        <div className="text-xs text-gray-500 block md:hidden">{getCategoryName(expense.categoryId, expense.category)}</div>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium border border-gray-200">
-                          {expense.category}
+                      <td className="px-4 py-3 text-gray-500 hidden md:table-cell">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          {getCategoryName(expense.categoryId, expense.category)}
                         </span>
                       </td>
+                      <td className="px-4 py-3 text-gray-500">{getAccountName(expense.accountId)}</td>
                       <td className="px-4 py-3 text-right text-gray-900 font-medium">
                         - {formatCurrency(expense.amount)}
                       </td>
@@ -188,7 +231,7 @@ export function ExpenseList() {
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(expense)}>
                             <Edit2 className="h-4 w-4 text-gray-400 hover:text-gray-900 transition-colors" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => removeExpense(expense.id)}>
+                          <Button variant="ghost" size="icon" onClick={() => removeExpense(expense)}>
                             <Trash2 className="h-4 w-4 text-gray-400 hover:text-gray-900 transition-colors" />
                           </Button>
                         </div>
