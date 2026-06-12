@@ -1,14 +1,16 @@
 "use client";
 
 import { useFinanceData } from "../hooks/useFinanceData";
+import { useCategories } from "../hooks/useCategories";
 import { formatCurrency, formatDateThai } from "../utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, parseISO } from "date-fns";
 
 export function MonthlySummary() {
-  const { incomes, expenses, allocation, loading } = useFinanceData();
+  const { incomes, expenses, allocation, loading: financeLoading } = useFinanceData();
+  const { categories, loading: categoriesLoading } = useCategories();
 
-  if (loading) {
+  if (financeLoading || categoriesLoading) {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="w-8 h-8 border-4 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
@@ -17,15 +19,12 @@ export function MonthlySummary() {
   }
 
   // Group by month
-  const monthlyData: Record<string, any> = {};
+  const monthlyData: Record<string, { income: number; expense: number; expenseByCategory: Record<string, number> }> = {};
 
   incomes.forEach((inc) => {
     const monthKey = format(parseISO(inc.date), "yyyy-MM");
     if (!monthlyData[monthKey]) {
-      monthlyData[monthKey] = {
-        income: 0,
-        expense: 0,
-      };
+      monthlyData[monthKey] = { income: 0, expense: 0, expenseByCategory: {} };
     }
     monthlyData[monthKey].income += inc.amount;
   });
@@ -33,15 +32,23 @@ export function MonthlySummary() {
   expenses.forEach((exp) => {
     const monthKey = format(parseISO(exp.date), "yyyy-MM");
     if (!monthlyData[monthKey]) {
-      monthlyData[monthKey] = {
-        income: 0,
-        expense: 0,
-      };
+      monthlyData[monthKey] = { income: 0, expense: 0, expenseByCategory: {} };
     }
     monthlyData[monthKey].expense += exp.amount;
+    
+    // Aggregate by categoryId
+    const catId = exp.categoryId || exp.category || "other";
+    if (!monthlyData[monthKey].expenseByCategory[catId]) {
+      monthlyData[monthKey].expenseByCategory[catId] = 0;
+    }
+    monthlyData[monthKey].expenseByCategory[catId] += exp.amount;
   });
 
   const sortedMonths = Object.keys(monthlyData).sort((a, b) => b.localeCompare(a));
+  
+  const getCategoryName = (id: string) => {
+    return categories.find(c => c.id === id)?.name || id;
+  };
 
   return (
     <div className="space-y-6">
@@ -78,7 +85,7 @@ export function MonthlySummary() {
 
                     return (
                       <tr key={month} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-gray-900 font-medium">
+                        <td className="px-4 py-3 text-gray-900 font-medium whitespace-nowrap">
                           {formatDateThai(`${month}-01`).split(" ")[1]} {formatDateThai(`${month}-01`).split(" ")[2]}
                         </td>
                         <td className="px-4 py-3 text-right text-gray-600">
@@ -105,6 +112,35 @@ export function MonthlySummary() {
           </div>
         </CardContent>
       </Card>
+
+      {sortedMonths.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>สัดส่วนรายจ่ายตามหมวดหมู่ ({formatDateThai(`${sortedMonths[0]}-01`).split(" ")[1]} {formatDateThai(`${sortedMonths[0]}-01`).split(" ")[2]})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {Object.entries(monthlyData[sortedMonths[0]].expenseByCategory)
+                .sort(([, a], [, b]) => b - a)
+                .map(([catId, amount]) => {
+                  const percent = (amount / monthlyData[sortedMonths[0]].expense) * 100;
+                  return (
+                    <div key={catId}>
+                      <div className="flex justify-between items-center mb-1 text-sm">
+                        <span className="font-medium text-gray-900">{getCategoryName(catId)}</span>
+                        <span className="text-gray-600">{formatCurrency(amount)} ({percent.toFixed(1)}%)</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div className="bg-gray-900 h-2 rounded-full" style={{ width: `${percent}%` }}></div>
+                      </div>
+                    </div>
+                  );
+                })
+              }
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

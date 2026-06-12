@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Wallet, Receipt, PieChart, Settings, Activity, Building2, ArrowRightLeft, Tags } from "lucide-react";
+import { LayoutDashboard, Wallet, Receipt, PieChart, Settings, Activity, Building2, ArrowRightLeft, Tags, Scale, Target, Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -11,6 +11,9 @@ const navItems = [
   { name: "โอนเงิน", href: "/finance/transfers", icon: ArrowRightLeft },
   { name: "รายรับ", href: "/finance/income", icon: Wallet },
   { name: "รายจ่าย", href: "/finance/expenses", icon: Receipt },
+  { name: "หนี้สิน", href: "/finance/debts", icon: Scale },
+  { name: "เป้าหมายการออม", href: "/finance/goals", icon: Target },
+  { name: "รายการประจำ", href: "/finance/recurring-transactions", icon: Repeat },
   { name: "หมวดหมู่", href: "/finance/categories", icon: Tags },
   { name: "สรุปรายเดือน", href: "/finance/summary", icon: PieChart },
   { name: "ตั้งค่า", href: "/finance/settings", icon: Settings },
