@@ -6,32 +6,46 @@ import { formatCurrency, formatDateThai } from "../utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit2 } from "lucide-react";
 
 export function ExpenseList() {
-  const { expenses, addExpense, removeExpense } = useFinanceData();
+  const { expenses, addExpense, removeExpense, updateExpense } = useFinanceData();
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("อาหาร");
   const [note, setNote] = useState("");
   const [success, setSuccess] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !amount || !category) return;
 
-    addExpense({
-      date,
-      title,
-      amount: parseFloat(amount),
-      category,
-      note,
-    });
+    if (editingId) {
+      const existingExpense = expenses.find(exp => exp.id === editingId);
+      if (existingExpense) {
+        updateExpense({
+          ...existingExpense,
+          date,
+          title,
+          amount: parseFloat(amount),
+          category,
+          note,
+        });
+      }
+      setEditingId(null);
+    } else {
+      addExpense({
+        date,
+        title,
+        amount: parseFloat(amount),
+        category,
+        note,
+      });
+    }
 
-    setTitle("");
-    setAmount("");
-    setNote("");
+    resetForm();
     setSuccess(true);
     
     setTimeout(() => {
@@ -39,11 +53,29 @@ export function ExpenseList() {
     }, 3000);
   };
 
+  const handleEdit = (expense: any) => {
+    setEditingId(expense.id);
+    setDate(expense.date);
+    setTitle(expense.title);
+    setAmount(expense.amount.toString());
+    setCategory(expense.category);
+    setNote(expense.note || "");
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setDate(new Date().toISOString().split("T")[0]);
+    setTitle("");
+    setAmount("");
+    setCategory("อาหาร");
+    setNote("");
+  };
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>เพิ่มรายจ่าย</CardTitle>
+          <CardTitle>{editingId ? "แก้ไขรายจ่าย" : "เพิ่มรายจ่าย"}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -84,8 +116,13 @@ export function ExpenseList() {
               ข้อมูลบันทึกแล้ว
             </div>}
 
-            <div className="md:col-span-2 flex justify-end mt-4">
-              <Button type="submit">บันทึกรายจ่าย</Button>
+            <div className="md:col-span-2 flex justify-end gap-2 mt-4">
+              {editingId && (
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  ยกเลิก
+                </Button>
+              )}
+              <Button type="submit">{editingId ? "บันทึกการแก้ไข" : "บันทึกรายจ่าย"}</Button>
             </div>
           </form>
         </CardContent>
@@ -131,9 +168,14 @@ export function ExpenseList() {
                         - {formatCurrency(expense.amount)}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <Button variant="ghost" size="icon" onClick={() => removeExpense(expense.id)}>
-                          <Trash2 className="h-4 w-4 text-gray-400 hover:text-gray-900 transition-colors" />
-                        </Button>
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => handleEdit(expense)}>
+                            <Edit2 className="h-4 w-4 text-gray-400 hover:text-gray-900 transition-colors" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => removeExpense(expense.id)}>
+                            <Trash2 className="h-4 w-4 text-gray-400 hover:text-gray-900 transition-colors" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))
