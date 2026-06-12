@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase";
-import { collection, doc, getDocs, setDoc, query, orderBy, writeBatch } from "firebase/firestore";
+import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, writeBatch } from "firebase/firestore";
 import { Category, CategoryType } from "../types";
 
 const defaultIncomeCategories = ["Salary", "Family", "Freelance", "Gift", "Other"];
@@ -25,6 +25,12 @@ export const saveCategory = async (userId: string, category: Category): Promise<
   await setDoc(docRef, category);
 };
 
+export const deleteCategory = async (userId: string, categoryId: string): Promise<void> => {
+  if (!userId) return;
+  const docRef = doc(db, "users", userId, "categories", categoryId);
+  await deleteDoc(docRef);
+};
+
 export const initializeDefaultCategories = async (userId: string): Promise<Category[]> => {
   if (!userId) return [];
   
@@ -33,7 +39,7 @@ export const initializeDefaultCategories = async (userId: string): Promise<Categ
   const now = new Date().toISOString();
 
   defaultIncomeCategories.forEach(name => {
-    const id = crypto.randomUUID();
+    const id = `default-income-${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
     const cat: Category = {
       id,
       userId,
@@ -50,7 +56,7 @@ export const initializeDefaultCategories = async (userId: string): Promise<Categ
   });
 
   defaultExpenseCategories.forEach(name => {
-    const id = crypto.randomUUID();
+    const id = `default-expense-${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
     const cat: Category = {
       id,
       userId,

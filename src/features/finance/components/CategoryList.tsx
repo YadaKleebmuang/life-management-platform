@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CategoryType } from "../types";
-import { Edit2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Edit2, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 
 export function CategoryList() {
-  const { categories, addCategory, updateCategory, toggleCategoryActive, loading } = useCategories();
+  const { categories, addCategory, updateCategory, toggleCategoryActive, removeCategory, loading } = useCategories();
   const [name, setName] = useState("");
   const [type, setType] = useState<CategoryType>("expense");
   const [description, setDescription] = useState("");
@@ -105,6 +105,18 @@ export function CategoryList() {
                           <ToggleLeft className="h-5 w-5 text-gray-400" />
                         )}
                       </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => {
+                            if (window.confirm("คุณต้องการลบหมวดหมู่นี้ใช่หรือไม่? (จะไม่ส่งผลกับรายการเก่าที่เคยบันทึกไว้)")) {
+                              removeCategory(cat.id);
+                            }
+                          }}
+                          title="ลบหมวดหมู่"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-400 hover:text-red-600 transition-colors" />
+                        </Button>
                     </div>
                   </td>
                 </tr>

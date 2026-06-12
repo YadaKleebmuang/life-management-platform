@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Category, CategoryType } from "../types";
-import { getCategories, saveCategory, initializeDefaultCategories } from "../services/categoryService";
+import { getCategories, saveCategory, deleteCategory, initializeDefaultCategories } from "../services/categoryService";
 import { useAuth } from "@/features/auth/contexts/AuthContext";
 
 export function useCategories() {
@@ -67,6 +67,12 @@ export function useCategories() {
     await loadCategories();
   };
 
+  const removeCategory = async (categoryId: string) => {
+    if (!user?.uid) return;
+    await deleteCategory(user.uid, categoryId);
+    await loadCategories();
+  };
+
   const activeIncomeCategories = categories.filter(c => c.type === "income" && c.isActive);
   const activeExpenseCategories = categories.filter(c => c.type === "expense" && c.isActive);
 
@@ -78,6 +84,7 @@ export function useCategories() {
     addCategory,
     updateCategory,
     toggleCategoryActive,
+    removeCategory,
     refreshCategories: loadCategories
   };
 }
