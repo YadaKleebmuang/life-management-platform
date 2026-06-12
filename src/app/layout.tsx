@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={`${notoSansThai.variable} dark`}>
+    <html lang="th" className={`${notoSansThai.variable}`}>
       <body className="font-sans antialiased">
         <ClientAppWrapper>{children}</ClientAppWrapper>
       </body>

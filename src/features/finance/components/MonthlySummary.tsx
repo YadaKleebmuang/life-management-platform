@@ -44,20 +44,20 @@ export function MonthlySummary() {
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-400 uppercase bg-slate-900/50">
+              <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-y border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 rounded-tl-lg">เดือน</th>
-                  <th className="px-4 py-3 text-right">รายรับรวม</th>
-                  <th className="px-4 py-3 text-right">รายจ่ายรวม</th>
-                  <th className="px-4 py-3 text-right">คงเหลือ</th>
-                  <th className="px-4 py-3 text-right">เงินออม (สะสม)</th>
-                  <th className="px-4 py-3 rounded-tr-lg text-right">ฉุกเฉิน (สะสม)</th>
+                  <th className="px-4 py-3 font-semibold">เดือน</th>
+                  <th className="px-4 py-3 font-semibold text-right">รายรับรวม</th>
+                  <th className="px-4 py-3 font-semibold text-right">รายจ่ายรวม</th>
+                  <th className="px-4 py-3 font-semibold text-right">คงเหลือ</th>
+                  <th className="px-4 py-3 font-semibold text-right">เงินออม (สะสม)</th>
+                  <th className="px-4 py-3 font-semibold text-right w-32">ฉุกเฉิน (สะสม)</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedMonths.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                       ยังไม่มีข้อมูล
                     </td>
                   </tr>
@@ -68,28 +68,24 @@ export function MonthlySummary() {
                     const savings = (data.income * allocation.savingsPercentage) / 100;
                     const emergency = (data.income * allocation.emergencyFundPercentage) / 100;
 
-                    // Note: In a real app, savings and emergency might not just be a fixed cut of that month if there are expenses from it,
-                    // but per requirement: "Summarize income, expenses, balance, savings, emergency fund by month",
-                    // allocating percentage of that month's income to savings/emergency is standard budget planning.
-
                     return (
-                      <tr key={month} className="border-b border-slate-800 hover:bg-slate-800/50">
-                        <td className="px-4 py-3 text-slate-300 font-medium">
+                      <tr key={month} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-gray-900 font-medium">
                           {formatDateThai(`${month}-01`).split(" ")[1]} {formatDateThai(`${month}-01`).split(" ")[2]}
                         </td>
-                        <td className="px-4 py-3 text-right text-emerald-400">
+                        <td className="px-4 py-3 text-right text-gray-600">
                           {formatCurrency(data.income)}
                         </td>
-                        <td className="px-4 py-3 text-right text-red-400">
+                        <td className="px-4 py-3 text-right text-gray-600">
                           {formatCurrency(data.expense)}
                         </td>
-                        <td className="px-4 py-3 text-right font-medium text-slate-200">
+                        <td className="px-4 py-3 text-right font-semibold text-gray-900">
                           {formatCurrency(balance)}
                         </td>
-                        <td className="px-4 py-3 text-right text-purple-400">
+                        <td className="px-4 py-3 text-right text-gray-600">
                           {formatCurrency(savings)}
                         </td>
-                        <td className="px-4 py-3 text-right text-amber-400">
+                        <td className="px-4 py-3 text-right text-gray-600">
                           {formatCurrency(emergency)}
                         </td>
                       </tr>

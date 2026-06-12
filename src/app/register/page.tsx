@@ -46,71 +46,77 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center pb-2">
+    <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA] p-4 py-12">
+      <Card className="w-full max-w-md border-gray-200">
+        <CardHeader className="text-center pb-6 pt-8">
           <div className="flex justify-center mb-4">
-            <Activity className="h-10 w-10 text-blue-500" />
+            <div className="h-12 w-12 bg-gray-900 rounded-xl flex items-center justify-center shadow-sm">
+              <Activity className="h-6 w-6 text-white" />
+            </div>
           </div>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl font-bold text-gray-900 tracking-tight">
             สร้างบัญชีใหม่
           </CardTitle>
-          <CardDescription className="text-slate-400">
-            เข้าร่วม Life Platform เพื่อจัดการการเงินของคุณ
+          <CardDescription className="text-gray-500 mt-2">
+            เข้าร่วมแพลตฟอร์มเพื่อจัดการการเงินของคุณ
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">ชื่อ-นามสกุล</label>
+            <div className="space-y-2 text-left">
+              <label className="text-sm font-medium text-gray-900">ชื่อ-นามสกุล</label>
               <Input
                 type="text"
                 placeholder="สมชาย ใจดี"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                className="bg-white"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">อีเมล</label>
+            <div className="space-y-2 text-left">
+              <label className="text-sm font-medium text-gray-900">อีเมล</label>
               <Input
                 type="email"
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="bg-white"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">รหัสผ่าน</label>
+            <div className="space-y-2 text-left">
+              <label className="text-sm font-medium text-gray-900">รหัสผ่าน</label>
               <Input
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="bg-white"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">ยืนยันรหัสผ่าน</label>
+            <div className="space-y-2 text-left">
+              <label className="text-sm font-medium text-gray-900">ยืนยันรหัสผ่าน</label>
               <Input
                 type="password"
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                className="bg-white"
               />
             </div>
 
-            {error && <div className="text-sm text-red-400 font-medium">{error}</div>}
+            {error && <div className="text-sm text-gray-900 bg-gray-100 p-3 rounded-lg border border-gray-200 font-medium">{error}</div>}
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full mt-2" disabled={loading}>
               {loading ? "กำลังสร้างบัญชี..." : "สมัครสมาชิก"}
             </Button>
 
-            <div className="text-center text-sm text-slate-400 mt-4">
+            <div className="text-center text-sm text-gray-500 mt-6 pt-6 border-t border-gray-100">
               มีบัญชีอยู่แล้วใช่หรือไม่?{" "}
-              <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+              <Link href="/login" className="text-gray-900 hover:text-gray-600 font-medium transition-colors">
                 เข้าสู่ระบบ
               </Link>
             </div>

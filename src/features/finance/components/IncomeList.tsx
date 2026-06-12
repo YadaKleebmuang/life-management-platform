@@ -16,6 +16,7 @@ export function IncomeList() {
   const [source, setSource] = useState("");
   const [usageDays, setUsageDays] = useState("30");
   const [note, setNote] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +35,11 @@ export function IncomeList() {
     setAmount("");
     setSource("");
     setNote("");
+    setSuccess(true);
+    
+    setTimeout(() => {
+      setSuccess(false);
+    }, 3000);
   };
 
   return (
@@ -45,30 +51,36 @@ export function IncomeList() {
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">วันที่</label>
+              <label className="text-sm font-medium text-gray-700">วันที่</label>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">ชื่อรายการ</label>
+              <label className="text-sm font-medium text-gray-700">ชื่อรายการ</label>
               <Input placeholder="เช่น เงินเดือน" value={title} onChange={(e) => setTitle(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">จำนวนเงิน (บาท)</label>
+              <label className="text-sm font-medium text-gray-700">จำนวนเงิน (บาท)</label>
               <Input type="number" min="0" step="0.01" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">แหล่งที่มา</label>
+              <label className="text-sm font-medium text-gray-700">แหล่งที่มา</label>
               <Input placeholder="เช่น บริษัท A" value={source} onChange={(e) => setSource(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">จำนวนวันที่จะใช้</label>
+              <label className="text-sm font-medium text-gray-700">จำนวนวันที่จะใช้</label>
               <Input type="number" min="1" value={usageDays} onChange={(e) => setUsageDays(e.target.value)} required />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">หมายเหตุ</label>
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-sm font-medium text-gray-700">หมายเหตุ</label>
               <Input placeholder="เพิ่มเติม..." value={note} onChange={(e) => setNote(e.target.value)} />
             </div>
-            <div className="md:col-span-2 flex justify-end mt-2">
+
+            {success && <div className="md:col-span-2 text-gray-900 bg-gray-100 p-3 rounded-lg border border-gray-200 text-sm font-medium flex items-center">
+              <svg className="w-4 h-4 mr-2 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              ข้อมูลบันทึกแล้ว
+            </div>}
+
+            <div className="md:col-span-2 flex justify-end mt-4">
               <Button type="submit">บันทึกรายรับ</Button>
             </div>
           </form>
@@ -82,37 +94,37 @@ export function IncomeList() {
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-400 uppercase bg-slate-900/50">
+              <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-y border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 rounded-tl-lg">วันที่</th>
-                  <th className="px-4 py-3">รายการ</th>
-                  <th className="px-4 py-3">แหล่งที่มา</th>
-                  <th className="px-4 py-3 text-right">จำนวนเงิน</th>
-                  <th className="px-4 py-3 rounded-tr-lg text-center">จัดการ</th>
+                  <th className="px-4 py-3 font-semibold">วันที่</th>
+                  <th className="px-4 py-3 font-semibold">รายการ</th>
+                  <th className="px-4 py-3 font-semibold">แหล่งที่มา</th>
+                  <th className="px-4 py-3 font-semibold text-right">จำนวนเงิน</th>
+                  <th className="px-4 py-3 font-semibold text-center w-16">จัดการ</th>
                 </tr>
               </thead>
               <tbody>
                 {incomes.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                       ยังไม่มีข้อมูลรายรับ
                     </td>
                   </tr>
                 ) : (
                   incomes.map((income) => (
-                    <tr key={income.id} className="border-b border-slate-800 hover:bg-slate-800/50">
-                      <td className="px-4 py-3 text-slate-300">{formatDateThai(income.date)}</td>
-                      <td className="px-4 py-3 font-medium text-slate-200">
+                    <tr key={income.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 text-gray-600">{formatDateThai(income.date)}</td>
+                      <td className="px-4 py-3 font-medium text-gray-900">
                         {income.title}
-                        {income.note && <div className="text-xs text-slate-500 font-normal mt-0.5">{income.note}</div>}
+                        {income.note && <div className="text-xs text-gray-500 font-normal mt-0.5">{income.note}</div>}
                       </td>
-                      <td className="px-4 py-3 text-slate-400">{income.source}</td>
-                      <td className="px-4 py-3 text-right text-emerald-400 font-medium">
-                        +{formatCurrency(income.amount)}
+                      <td className="px-4 py-3 text-gray-600">{income.source}</td>
+                      <td className="px-4 py-3 text-right text-gray-900 font-medium">
+                        + {formatCurrency(income.amount)}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <Button variant="ghost" size="icon" onClick={() => removeIncome(income.id)}>
-                          <Trash2 className="h-4 w-4 text-red-400" />
+                          <Trash2 className="h-4 w-4 text-gray-400 hover:text-gray-900 transition-colors" />
                         </Button>
                       </td>
                     </tr>

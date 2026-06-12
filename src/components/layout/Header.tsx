@@ -25,43 +25,43 @@ export function Header() {
     : user?.email?.charAt(0).toUpperCase() || "U";
 
   return (
-    <header className="h-16 flex items-center justify-between px-6 bg-slate-900/50 backdrop-blur-md border-b border-slate-800 sticky top-0 z-10">
-      <div className="flex items-center bg-slate-800/50 rounded-full px-3 py-1.5 border border-slate-700/50 w-64">
-        <Search className="h-4 w-4 text-slate-400 mr-2" />
+    <header className="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="flex items-center bg-gray-50 rounded-lg px-3 py-2 border border-gray-200 w-64 focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent transition-all">
+        <Search className="h-4 w-4 text-gray-500 mr-2" />
         <input 
           type="text" 
           placeholder="ค้นหา..." 
-          className="bg-transparent border-none outline-none text-sm text-slate-200 placeholder:text-slate-500 w-full"
+          className="bg-transparent border-none outline-none text-sm text-gray-900 placeholder:text-gray-400 w-full"
         />
       </div>
       
       <div className="flex items-center space-x-4">
-        <button className="p-2 text-slate-400 hover:text-slate-200 transition-colors relative">
+        <button className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors relative">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-slate-900"></span>
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-gray-900 border-2 border-white"></span>
         </button>
         
         <div className="relative">
           <button 
             onClick={() => setShowDropdown(!showDropdown)}
-            className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold border-2 border-slate-800 hover:ring-2 hover:ring-blue-500/50 transition-all focus:outline-none"
+            className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-900 text-sm font-semibold border border-gray-200 hover:bg-gray-200 transition-all focus:outline-none"
           >
             {initial}
           </button>
 
           {showDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-lg shadow-xl py-1 z-50">
-              <div className="px-4 py-2 border-b border-slate-800">
-                <p className="text-sm font-medium text-slate-200 truncate">
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+              <div className="px-4 py-2 border-b border-gray-100">
+                <p className="text-sm font-medium text-gray-900 truncate">
                   {userProfile?.displayName || "ผู้ใช้งาน"}
                 </p>
-                <p className="text-xs text-slate-500 truncate">
+                <p className="text-xs text-gray-500 truncate">
                   {user?.email}
                 </p>
               </div>
               <button
                 onClick={handleLogout}
-                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-slate-800 flex items-center transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center transition-colors"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 ออกจากระบบ
