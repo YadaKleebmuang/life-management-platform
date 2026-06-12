@@ -2,19 +2,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Income, Expense, BudgetAllocation, FinanceSummary } from "../types";
-import {
-  getIncomes,
-  saveIncome,
-  deleteIncome,
-  getExpenses,
-  saveExpense,
-  deleteExpense,
-  getAllocation,
-  saveAllocation,
-} from "../services/storage";
+import { getIncomes, saveIncome, deleteIncome } from "../services/incomeService";
+import { getExpenses, saveExpense, deleteExpense } from "../services/expenseService";
+import { getAllocation, saveAllocation } from "../services/budgetService";
 import { calculateSummary } from "../utils/calculations";
+import { useAuth } from "@/features/auth/contexts/AuthContext";
 
 export function useFinanceData() {
+  const { user } = useAuth();
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [allocation, setAllocation] = useState<BudgetAllocation>({
@@ -30,74 +25,96 @@ export function useFinanceData() {
     emergencyFund: 0,
     dailyBudget: 0,
   });
+  const [loading, setLoading] = useState(true);
 
-  const loadData = useCallback(() => {
-    const loadedIncomes = getIncomes();
-    const loadedExpenses = getExpenses();
-    const loadedAllocation = getAllocation();
+  const loadData = useCallback(async () => {
+    if (!user?.uid) {
+      setLoading(false);
+      return;
+    }
 
-    setIncomes(loadedIncomes);
-    setExpenses(loadedExpenses);
-    setAllocation(loadedAllocation);
+    setLoading(true);
+    try {
+      const [loadedIncomes, loadedExpenses, loadedAllocation] = await Promise.all([
+        getIncomes(user.uid),
+        getExpenses(user.uid),
+        getAllocation(user.uid),
+      ]);
 
-    const calculatedSummary = calculateSummary(
-      loadedIncomes,
-      loadedExpenses,
-      loadedAllocation
-    );
-    setSummary(calculatedSummary);
-  }, []);
+      setIncomes(loadedIncomes);
+      setExpenses(loadedExpenses);
+      setAllocation(loadedAllocation);
+
+      const calculatedSummary = calculateSummary(
+        loadedIncomes,
+        loadedExpenses,
+        loadedAllocation
+      );
+      setSummary(calculatedSummary);
+    } catch (error) {
+      console.error("Error loading finance data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.uid]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   // Income Methods
-  const addIncome = (income: Omit<Income, "id" | "createdAt">) => {
+  const addIncome = async (income: Omit<Income, "id" | "createdAt">) => {
+    if (!user?.uid) return;
     const newIncome: Income = {
       ...income,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };
-    saveIncome(newIncome);
-    loadData();
+    await saveIncome(user.uid, newIncome);
+    await loadData();
   };
 
-  const updateIncome = (income: Income) => {
-    saveIncome(income);
-    loadData();
+  const updateIncome = async (income: Income) => {
+    if (!user?.uid) return;
+    await saveIncome(user.uid, income);
+    await loadData();
   };
 
-  const removeIncome = (id: string) => {
-    deleteIncome(id);
-    loadData();
+  const removeIncome = async (id: string) => {
+    if (!user?.uid) return;
+    await deleteIncome(user.uid, id);
+    await loadData();
   };
 
   // Expense Methods
-  const addExpense = (expense: Omit<Expense, "id" | "createdAt">) => {
+  const addExpense = async (expense: Omit<Expense, "id" | "createdAt">) => {
+    if (!user?.uid) return;
     const newExpense: Expense = {
       ...expense,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };
-    saveExpense(newExpense);
-    loadData();
+    await saveExpense(user.uid, newExpense);
+    await loadData();
   };
 
-  const updateExpense = (expense: Expense) => {
-    saveExpense(expense);
-    loadData();
+  const updateExpense = async (expense: Expense) => {
+    if (!user?.uid) return;
+    await saveExpense(user.uid, expense);
+    await loadData();
   };
 
-  const removeExpense = (id: string) => {
-    deleteExpense(id);
-    loadData();
+  const removeExpense = async (id: string) => {
+    if (!user?.uid) return;
+    await deleteExpense(user.uid, id);
+    await loadData();
   };
 
   // Allocation Methods
-  const updateAllocation = (newAllocation: BudgetAllocation) => {
-    saveAllocation(newAllocation);
-    loadData();
+  const updateAllocation = async (newAllocation: BudgetAllocation) => {
+    if (!user?.uid) return;
+    await saveAllocation(user.uid, newAllocation);
+    await loadData();
   };
 
   return {
@@ -105,6 +122,7 @@ export function useFinanceData() {
     expenses,
     allocation,
     summary,
+    loading,
     addIncome,
     updateIncome,
     removeIncome,

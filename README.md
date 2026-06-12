@@ -25,6 +25,44 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 To learn more about Next.js, take a look at the following resources:
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+
+## Project Structure
+
+This project uses a feature-based architecture combined with Next.js App Router conventions:
+
+```text
+src/
+├── app/                  # Next.js App Router pages and layouts
+│   ├── finance/          # Finance module routes (income, expenses, summary, settings)
+│   ├── login/            # Login page route
+│   ├── register/         # Registration page route
+│   ├── globals.css       # Global stylesheet (Monochrome Design System)
+│   ├── layout.tsx        # Root layout with AuthProvider and MainLayout
+│   └── page.tsx          # Dashboard page
+│
+├── components/           # Shared UI components
+│   ├── layout/           # Global layout components (Header, Sidebar, MainLayout, ClientAppWrapper)
+│   └── ui/               # Reusable base components (Button, Input, Card)
+│
+├── features/             # Feature-based modules
+│   ├── auth/             # Authentication Module
+│   │   ├── components/   # Auth Guard
+│   │   ├── contexts/     # Auth Context
+│   │   ├── services/     # Firebase Auth service
+│   │   ├── types/        # Auth types
+│   │   └── utils/        # Auth utilities (error messages)
+│   │
+│   └── finance/          # Finance Module
+│       ├── components/   # Feature-specific components (DashboardSummary, IncomeList, ExpenseList, MonthlySummary, SettingsPanel)
+│       ├── hooks/        # Custom hooks (useFinanceData)
+│       ├── services/     # LocalStorage data services
+│       ├── types/        # Finance types (Income, Expense, BudgetAllocation)
+│       └── utils/        # Finance utilities (formatters, calculations)
+│
+└── lib/                  # Application-wide utilities and configurations
+    ├── firebase.ts       # Firebase initialization and config
+    └── utils.ts          # Generic utilities (e.g., tailwind clsx merge)
+```
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!

@@ -6,7 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, ShieldAlert, Calendar } from "lucide-react";
 
 export function DashboardSummary() {
-  const { summary } = useFinanceData();
+  const { summary, loading } = useFinanceData();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="w-8 h-8 border-4 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

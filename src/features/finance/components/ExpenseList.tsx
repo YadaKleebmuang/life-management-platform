@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Trash2, Edit2 } from "lucide-react";
 
 export function ExpenseList() {
-  const { expenses, addExpense, removeExpense, updateExpense } = useFinanceData();
+  const { expenses, addExpense, removeExpense, updateExpense, loading } = useFinanceData();
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
@@ -17,16 +17,29 @@ export function ExpenseList() {
   const [note, setNote] = useState("");
   const [success, setSuccess] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !amount || !category) return;
 
-    if (editingId) {
-      const existingExpense = expenses.find(exp => exp.id === editingId);
-      if (existingExpense) {
-        updateExpense({
-          ...existingExpense,
+    setSaving(true);
+    try {
+      if (editingId) {
+        const existingExpense = expenses.find(exp => exp.id === editingId);
+        if (existingExpense) {
+          await updateExpense({
+            ...existingExpense,
+            date,
+            title,
+            amount: parseFloat(amount),
+            category,
+            note,
+          });
+        }
+        setEditingId(null);
+      } else {
+        await addExpense({
           date,
           title,
           amount: parseFloat(amount),
@@ -34,23 +47,18 @@ export function ExpenseList() {
           note,
         });
       }
-      setEditingId(null);
-    } else {
-      addExpense({
-        date,
-        title,
-        amount: parseFloat(amount),
-        category,
-        note,
-      });
-    }
 
-    resetForm();
-    setSuccess(true);
-    
-    setTimeout(() => {
-      setSuccess(false);
-    }, 3000);
+      resetForm();
+      setSuccess(true);
+      
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Error saving expense:", error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleEdit = (expense: any) => {
@@ -118,11 +126,13 @@ export function ExpenseList() {
 
             <div className="md:col-span-2 flex justify-end gap-2 mt-4">
               {editingId && (
-                <Button type="button" variant="outline" onClick={resetForm}>
+                <Button type="button" variant="outline" onClick={resetForm} disabled={saving}>
                   ยกเลิก
                 </Button>
               )}
-              <Button type="submit">{editingId ? "บันทึกการแก้ไข" : "บันทึกรายจ่าย"}</Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? "กำลังบันทึก..." : (editingId ? "บันทึกการแก้ไข" : "บันทึกรายจ่าย")}
+              </Button>
             </div>
           </form>
         </CardContent>
@@ -145,7 +155,13 @@ export function ExpenseList() {
                 </tr>
               </thead>
               <tbody>
-                {expenses.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                      กำลังโหลดข้อมูล...
+                    </td>
+                  </tr>
+                ) : expenses.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                       ยังไม่มีข้อมูลรายจ่าย

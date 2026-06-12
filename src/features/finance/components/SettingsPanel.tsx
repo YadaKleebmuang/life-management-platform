@@ -13,6 +13,7 @@ export function SettingsPanel() {
   const [emergency, setEmergency] = useState(allocation.emergencyFundPercentage.toString());
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setSpending(allocation.spendingPercentage.toString());
@@ -20,7 +21,7 @@ export function SettingsPanel() {
     setEmergency(allocation.emergencyFundPercentage.toString());
   }, [allocation]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const s = parseFloat(spending);
     const sav = parseFloat(savings);
     const e = parseFloat(emergency);
@@ -35,19 +36,27 @@ export function SettingsPanel() {
       return;
     }
 
-    setError("");
-    setSuccess(false);
-    updateAllocation({
-      spendingPercentage: s,
-      savingsPercentage: sav,
-      emergencyFundPercentage: e,
-    });
-    setSuccess(true);
-    
-    // ซ่อนข้อความแจ้งเตือนความสำเร็จหลังจาก 3 วินาที
-    setTimeout(() => {
+    setSaving(true);
+    try {
+      setError("");
       setSuccess(false);
-    }, 3000);
+      await updateAllocation({
+        spendingPercentage: s,
+        savingsPercentage: sav,
+        emergencyFundPercentage: e,
+      });
+      setSuccess(true);
+      
+      // ซ่อนข้อความแจ้งเตือนความสำเร็จหลังจาก 3 วินาที
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+    } catch (err) {
+      console.error("Error saving settings:", err);
+      setError("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -95,8 +104,8 @@ export function SettingsPanel() {
           </div>}
 
           <div className="pt-6 mt-6 border-t border-gray-100">
-            <Button onClick={handleSave} className="w-full">
-              บันทึกการตั้งค่า
+            <Button onClick={handleSave} className="w-full" disabled={saving}>
+              {saving ? "กำลังบันทึก..." : "บันทึกการตั้งค่า"}
             </Button>
           </div>
         </div>
