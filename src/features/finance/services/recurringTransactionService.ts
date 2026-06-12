@@ -34,11 +34,10 @@ export const processRecurringTransactions = async (userId: string): Promise<numb
   
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
   
-  // Find active transactions where nextRunDate <= today
+  // Find active transactions first to avoid index errors, then filter by date in JS
   const q = query(
     collection(db, "users", userId, "recurringTransactions"),
-    where("isActive", "==", true),
-    where("nextRunDate", "<=", today)
+    where("isActive", "==", true)
   );
   
   const querySnapshot = await getDocs(q);
@@ -49,6 +48,11 @@ export const processRecurringTransactions = async (userId: string): Promise<numb
   // We process them sequentially to avoid overlapping transaction conflicts on the same account
   for (const docSnapshot of querySnapshot.docs) {
     const recurringTx = docSnapshot.data() as RecurringTransaction;
+    
+    // JS filter for date
+    if (recurringTx.nextRunDate > today) {
+      continue;
+    }
     
     // Check end date if exists
     if (recurringTx.endDate && recurringTx.nextRunDate > recurringTx.endDate) {
