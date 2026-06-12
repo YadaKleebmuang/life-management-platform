@@ -6,8 +6,7 @@ export const getTransactions = async (userId: string): Promise<Transaction[]> =>
   if (!userId) return [];
   const q = query(
     collection(db, "users", userId, "transactions"),
-    orderBy("transactionDate", "desc"),
-    orderBy("createdAt", "desc")
+    orderBy("transactionDate", "desc")
   );
   const querySnapshot = await getDocs(q);
   const transactions: Transaction[] = [];
