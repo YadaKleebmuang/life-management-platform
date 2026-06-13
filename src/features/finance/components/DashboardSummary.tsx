@@ -2,20 +2,20 @@
 
 import { useAccounts } from "../hooks/useAccounts";
 import { useDebts } from "../hooks/useDebts";
-import { useGoals } from "../hooks/useGoals";
 import { useTransactions } from "../hooks/useTransactions";
+import { useSavingsGoals } from "../hooks/useSavingsGoals";
 import { formatCurrency } from "../utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, Target, Scale, Activity } from "lucide-react";
+import { Wallet, Scale, Activity, Target } from "lucide-react";
 import Link from "next/link";
 
 export function DashboardSummary() {
   const { activeAccounts, loading: accountsLoading } = useAccounts();
   const { borrowedDebts, lentDebts, loading: debtsLoading } = useDebts();
-  const { goals, loading: goalsLoading } = useGoals();
   const { transactions, loading: txLoading } = useTransactions();
+  const { goals, loading: goalsLoading } = useSavingsGoals();
 
-  if (accountsLoading || debtsLoading || goalsLoading || txLoading) {
+  if (accountsLoading || debtsLoading || txLoading || goalsLoading) {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="w-8 h-8 border-4 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
@@ -32,9 +32,6 @@ export function DashboardSummary() {
   // Recent Transactions (Limit to 5)
   const recentTx = transactions.slice(0, 5);
 
-  // Active Goals (limit to 3)
-  const activeGoals = goals.filter(g => g.status !== "completed").slice(0, 3);
-
   const getTxColor = (type: string) => {
     switch(type) {
       case "income": return "text-green-600";
@@ -42,7 +39,6 @@ export function DashboardSummary() {
       case "transfer": return "text-blue-600";
       case "debt_created": return "text-purple-600";
       case "debt_repayment": return "text-teal-600";
-      case "goal_contribution": return "text-indigo-600";
       default: return "text-gray-900";
     }
   };
@@ -84,7 +80,7 @@ export function DashboardSummary() {
             <div className="text-2xl font-semibold text-gray-900">
               {formatCurrency(totalAssets)}
             </div>
-            <Link href="/finance/accounts" className="text-xs text-blue-600 hover:underline mt-1 block">ดูบัญชีทั้งหมด</Link>
+            <Link href="/finance/accounts" className="text-xs text-black-200 hover:underline mt-1 block">ดูบัญชีทั้งหมด</Link>
           </CardContent>
         </Card>
 
@@ -100,7 +96,7 @@ export function DashboardSummary() {
             <div className="text-2xl font-semibold text-red-600">
               {formatCurrency(totalDebts)}
             </div>
-            <Link href="/finance/debts" className="text-xs text-blue-600 hover:underline mt-1 block">จัดการหนี้สิน</Link>
+            <Link href="/finance/debts" className="text-xs text-black-200 hover:underline mt-1 block">จัดการหนี้สิน</Link>
           </CardContent>
         </Card>
 
@@ -116,7 +112,7 @@ export function DashboardSummary() {
             <div className="text-2xl font-semibold text-green-600">
               {formatCurrency(totalLent)}
             </div>
-            <Link href="/finance/debts" className="text-xs text-blue-600 hover:underline mt-1 block">ดูรายละเอียด</Link>
+            <Link href="/finance/debts" className="text-xs text-black-200 hover:underline mt-1 block">ดูรายละเอียด</Link>
           </CardContent>
         </Card>
       </div>
@@ -150,37 +146,39 @@ export function DashboardSummary() {
           </CardContent>
         </Card>
 
-        {/* Goals Overview */}
+        {/* Active Savings Goals */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
               <Target className="h-5 w-5" /> เป้าหมายการออมของคุณ
             </CardTitle>
-            <Link href="/finance/goals" className="text-sm text-blue-600 hover:underline">ดูทั้งหมด</Link>
+            <Link href="/finance/goals" className="text-xs text-black-200 hover:underline">ดูทั้งหมด</Link>
           </CardHeader>
           <CardContent>
-            {activeGoals.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4">คุณยังไม่มีเป้าหมายที่กำลังดำเนินการอยู่</p>
+            {goals.filter(g => g.status === "in_progress").length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-4">ยังไม่มีเป้าหมายที่กำลังดำเนินการ</p>
             ) : (
-              <div className="space-y-5">
-                {activeGoals.map((goal) => {
-                  let progressPercent = (goal.currentAmount / goal.targetAmount) * 100;
-                  if (progressPercent > 100) progressPercent = 100;
-
+              <div className="space-y-4">
+                {goals.filter(g => g.status === "in_progress").slice(0, 5).map((goal) => {
+                  const percent = goal.targetAmount > 0 
+                    ? Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100))
+                    : 0;
                   return (
-                    <div key={goal.id}>
+                    <div key={goal.id} className="border-b border-gray-50 pb-3 last:border-0 last:pb-0">
                       <div className="flex justify-between items-center mb-1">
-                        <p className="text-sm font-medium text-gray-900">{goal.goalName}</p>
-                        <p className="text-xs font-semibold text-gray-700">{progressPercent.toFixed(1)}%</p>
+                        <p className="font-medium text-sm text-gray-900">{goal.name}</p>
+                        <p className="font-semibold text-sm text-black">
+                          {percent}%
+                        </p>
                       </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2 mb-1 overflow-hidden">
+                      <div className="w-full bg-gray-100 rounded-full h-1.5 mb-1">
                         <div 
-                          className="bg-gray-900 h-2 rounded-full transition-all duration-500" 
-                          style={{ width: `${progressPercent}%` }}
+                          className="bg-black h-1.5 rounded-full"
+                          style={{ width: `${percent}%` }}
                         ></div>
                       </div>
                       <div className="flex justify-between text-[10px] text-gray-500">
-                        <span>เก็บได้ {formatCurrency(goal.currentAmount)}</span>
+                        <span>สะสมแล้ว {formatCurrency(goal.currentAmount)}</span>
                         <span>เป้าหมาย {formatCurrency(goal.targetAmount)}</span>
                       </div>
                     </div>

@@ -8,11 +8,11 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { name: "แดชบอร์ด", href: "/", icon: LayoutDashboard },
   { name: "บัญชีของฉัน", href: "/finance/accounts", icon: Building2 },
-  { name: "โอนเงิน", href: "/finance/transfers", icon: ArrowRightLeft },
   { name: "รายรับ", href: "/finance/income", icon: Wallet },
   { name: "รายจ่าย", href: "/finance/expenses", icon: Receipt },
-  { name: "หนี้สิน", href: "/finance/debts", icon: Scale },
+  { name: "โอนเงิน", href: "/finance/transfers", icon: ArrowRightLeft },
   { name: "เป้าหมายการออม", href: "/finance/goals", icon: Target },
+  { name: "หนี้สิน", href: "/finance/debts", icon: Scale },
   { name: "รายการประจำ", href: "/finance/recurring-transactions", icon: Repeat },
   { name: "หมวดหมู่", href: "/finance/categories", icon: Tags },
   { name: "สรุปรายเดือน", href: "/finance/summary", icon: PieChart },
@@ -31,8 +31,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     <>
       {/* Mobile Overlay Background */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 md:hidden" 
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
           onClick={onClose}
         />
       )}
@@ -49,14 +49,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               Life Platform
             </span>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="md:hidden p-2 -mr-2 text-gray-500 hover:bg-gray-100 rounded-lg"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">
             Finance Module
@@ -87,7 +87,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             );
           })}
         </nav>
-        
+
         <div className="p-4 border-t border-gray-200 text-xs text-gray-500 text-center flex-shrink-0">
           &copy; 2026 Life Management
         </div>

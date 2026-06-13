@@ -1,11 +1,21 @@
-import { GoalList } from "@/features/finance/components/GoalList";
+import { SavingsGoalList } from "@/features/finance/components/goals/SavingsGoalList";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "เป้าหมายการออม | Life Platform",
+};
 
 export default function GoalsPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">เป้าหมายการออม</h1>
-      <p className="text-gray-500 text-sm">ตั้งเป้าหมายและบันทึกการออมเงินของคุณทีละเล็กทีละน้อยจนกว่าจะสำเร็จ</p>
-      <GoalList />
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">เป้าหมายการออม</h1>
+        <p className="text-gray-500 mt-1">
+          สร้างเป้าหมายและจัดสรรเงินของคุณโดยไม่กระทบยอดเงินจริงในบัญชี
+        </p>
+      </div>
+      
+      <SavingsGoalList />
     </div>
   );
 }

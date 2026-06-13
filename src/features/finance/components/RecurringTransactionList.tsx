@@ -35,6 +35,12 @@ export function RecurringTransactionList() {
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [endDate, setEndDate] = useState("");
   const [note, setNote] = useState("");
+  
+  // Split State
+  const [isSplitBySettings, setIsSplitBySettings] = useState(false);
+  const [spendingAccountId, setSpendingAccountId] = useState("");
+  const [savingsAccountId, setSavingsAccountId] = useState("");
+  const [emergencyAccountId, setEmergencyAccountId] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -51,7 +57,19 @@ export function RecurringTransactionList() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !amount || !categoryId || !accountId) return;
+    if (!title || !amount || !categoryId) return;
+    
+    if (isSplitBySettings && type === "income") {
+      if (!spendingAccountId || !savingsAccountId || !emergencyAccountId) {
+        setError("กรุณาเลือกบัญชีให้ครบทั้ง 3 ประเภท");
+        return;
+      }
+    } else {
+      if (!accountId) {
+        setError("กรุณาเลือกบัญชี");
+        return;
+      }
+    }
 
     const txAmount = parseFloat(amount);
     if (txAmount <= 0) {
@@ -67,11 +85,17 @@ export function RecurringTransactionList() {
         title,
         amount: txAmount,
         categoryId,
-        accountId,
+        accountId: (isSplitBySettings && type === "income") ? "" : accountId,
         frequency,
         startDate,
         endDate: endDate || undefined,
         note,
+        isSplitBySettings: type === "income" ? isSplitBySettings : false,
+        splitAccounts: (type === "income" && isSplitBySettings) ? {
+          spendingAccountId,
+          savingsAccountId,
+          emergencyAccountId
+        } : undefined
       });
 
       resetForm();
@@ -99,6 +123,10 @@ export function RecurringTransactionList() {
     setStartDate(new Date().toISOString().split("T")[0]);
     setEndDate("");
     setNote("");
+    setIsSplitBySettings(false);
+    setSpendingAccountId("");
+    setSavingsAccountId("");
+    setEmergencyAccountId("");
   };
 
   const getAccountName = (accId: string) => {
@@ -192,20 +220,61 @@ export function RecurringTransactionList() {
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">บัญชี *</label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
-                  value={accountId}
-                  onChange={(e) => setAccountId(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>เลือกบัญชี</option>
-                  {activeAccounts.map(acc => (
-                    <option key={acc.id} value={acc.id}>{acc.accountName}</option>
-                  ))}
-                </select>
-              </div>
+              {type === "income" && (
+                <div className="space-y-2 md:col-span-2">
+                  <label className="flex items-center gap-2 cursor-pointer bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <input 
+                      type="checkbox" 
+                      checked={isSplitBySettings} 
+                      onChange={(e) => setIsSplitBySettings(e.target.checked)} 
+                    />
+                    <span className="text-sm font-medium text-blue-900">แบ่งเงินเข้าบัญชีตามสัดส่วนการตั้งค่าการเงินอัตโนมัติ (70/10/20)</span>
+                  </label>
+                </div>
+              )}
+
+              {(!isSplitBySettings || type !== "income") && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">บัญชี *</label>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                    value={accountId}
+                    onChange={(e) => setAccountId(e.target.value)}
+                    required={!isSplitBySettings}
+                  >
+                    <option value="" disabled>เลือกบัญชี</option>
+                    {activeAccounts.map(acc => (
+                      <option key={acc.id} value={acc.id}>{acc.accountName}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {isSplitBySettings && type === "income" && (
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">บัญชีสำหรับใช้จ่าย *</label>
+                    <select className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm" value={spendingAccountId} onChange={(e) => setSpendingAccountId(e.target.value)} required={isSplitBySettings}>
+                      <option value="" disabled>เลือกบัญชี</option>
+                      {activeAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.accountName}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">บัญชีสำหรับเงินออม *</label>
+                    <select className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm" value={savingsAccountId} onChange={(e) => setSavingsAccountId(e.target.value)} required={isSplitBySettings}>
+                      <option value="" disabled>เลือกบัญชี</option>
+                      {activeAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.accountName}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">บัญชีสำหรับฉุกเฉิน *</label>
+                    <select className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm" value={emergencyAccountId} onChange={(e) => setEmergencyAccountId(e.target.value)} required={isSplitBySettings}>
+                      <option value="" disabled>เลือกบัญชี</option>
+                      {activeAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.accountName}</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">ความถี่ *</label>
@@ -279,7 +348,7 @@ export function RecurringTransactionList() {
                         {tx.title}
                       </h3>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        หมวด: {getCategoryName(tx.categoryId, tx.type)} | บัญชี: {getAccountName(tx.accountId)}
+                        หมวด: {getCategoryName(tx.categoryId, tx.type)} | บัญชี: {tx.isSplitBySettings ? "แบ่งตามสัดส่วนอัตโนมัติ" : getAccountName(tx.accountId)}
                       </p>
                     </div>
                   </div>
@@ -313,7 +382,7 @@ export function RecurringTransactionList() {
 
                   <button 
                     onClick={() => {
-                      if(confirm("คุณต้องการลบรายการประจำนี้ใช่หรือไม่? (ประวัติธุรกรรมที่เคยเกิดขึ้นจะไม่ถูกลบ)")) {
+                      if(confirm("คุณต้องการลบรายการประจำนี้ใช่หรือไม่? (ประวัติธุรกรรมทั้งหมดที่เกิดจากรายการนี้จะถูกลบ และยอดเงินในบัญชีจะถูกปรับคืน)")) {
                         removeTransaction(tx.id);
                       }
                     }}

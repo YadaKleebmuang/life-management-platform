@@ -8,6 +8,7 @@ export interface Income {
   categoryId?: string; // [NEW] Link to dynamic category
   usageDays: number;
   note?: string;
+  recurringTransactionId?: string; // Link back to the recurring transaction if automatically generated
   createdAt: string;
 }
 
@@ -20,6 +21,7 @@ export interface Expense {
   categoryId?: string; // [NEW] Link to dynamic category
   amount: number;
   note?: string;
+  recurringTransactionId?: string; // Link back to the recurring transaction if automatically generated
   createdAt: string;
 }
 
@@ -103,7 +105,6 @@ export type TransactionType =
   | "transfer"
   | "debt_created"
   | "debt_repayment"
-  | "goal_contribution"
   | "recurring_income"
   | "recurring_expense"
   | "manual_adjustment";
@@ -119,6 +120,7 @@ export interface Transaction {
   title: string;
   description?: string;
   transactionDate: string; // ISO string
+  recurringTransactionId?: string; // Link back to the recurring transaction if automatically generated
   createdAt: string;
 }
 
@@ -131,6 +133,7 @@ export interface AccountSnapshot {
   snapshotDate: string; // ISO string
   sourceType: TransactionType;
   sourceId: string; // ID of the transaction/event that caused this
+  recurringTransactionId?: string; // Link back to the recurring transaction if automatically generated
   createdAt: string;
 }
 
@@ -148,33 +151,6 @@ export interface Category {
   updatedAt: string;
 }
 
-export type GoalStatus = "active" | "completed" | "paused" | "cancelled";
-
-export interface Goal {
-  id: string;
-  userId: string;
-  goalName: string;
-  targetAmount: number;
-  currentAmount: number;
-  linkedAccountId?: string; // Default account to contribute from
-  startDate: string; // ISO string
-  targetDate?: string; // ISO string
-  status: GoalStatus;
-  note?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface GoalContribution {
-  id: string;
-  userId: string;
-  goalId: string;
-  accountId: string; // Account where money was withdrawn
-  amount: number;
-  contributionDate: string; // ISO string
-  note?: string;
-  createdAt: string;
-}
 
 export type RecurringFrequency = "daily" | "weekly" | "monthly" | "yearly";
 
@@ -193,6 +169,41 @@ export interface RecurringTransaction {
   lastRunDate?: string; // ISO string
   note?: string;
   isActive: boolean;
+  isSplitBySettings?: boolean;
+  splitAccounts?: {
+    spendingAccountId: string;
+    savingsAccountId: string;
+    emergencyAccountId: string;
+  };
   createdAt: string;
   updatedAt: string;
+}
+
+export type GoalStatus = "in_progress" | "completed" | "cancelled";
+
+export interface SavingsGoal {
+  id: string;
+  userId: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate?: string; // ISO string
+  status: GoalStatus;
+  note?: string;
+  icon?: string;
+  color?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GoalAllocation {
+  id: string;
+  userId: string;
+  goalId: string;
+  accountId: string;
+  amount: number;
+  type: "add" | "withdraw";
+  date: string; // ISO string
+  note?: string;
+  createdAt: string;
 }
