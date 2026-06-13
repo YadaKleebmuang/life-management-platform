@@ -58,9 +58,11 @@ export function SavingsGoalCard({ goal, onAllocate, onEdit, onDelete }: SavingsG
           </div>
         </div>
 
-        <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs mb-4">
-          <p className="text-gray-500 line-clamp-2">{goal.note || "ไม่มีหมายเหตุ"}</p>
-        </div>
+        {goal.note && (
+          <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs mb-4 text-gray-500 italic break-words line-clamp-2">
+            หมายเหตุ: {goal.note}
+          </div>
+        )}
 
         <div className="flex justify-between items-center pt-2">
           <div className="flex gap-2">

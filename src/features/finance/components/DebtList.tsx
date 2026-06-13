@@ -141,6 +141,7 @@ export function DebtList() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900">{debt.personName}</h3>
               {debt.dueDate && <p className="text-xs text-gray-500">กำหนดชำระ: {new Date(debt.dueDate).toLocaleDateString("th-TH")}</p>}
+              {debt.note && <p className="text-xs text-gray-500 mt-1 italic break-words line-clamp-2">หมายเหตุ: {debt.note}</p>}
             </div>
             <div className={`px-2.5 py-1 rounded-full text-xs font-medium ${
               isPaid ? "bg-green-100 text-green-800" : 

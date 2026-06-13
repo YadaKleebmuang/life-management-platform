@@ -261,6 +261,11 @@ export function AccountList() {
                 <span>ยอดยกมา: {formatCurrency(account.initialBalance)}</span>
                 {!account.isActive && <span className="text-red-500 font-medium">ถูกระงับ</span>}
               </div>
+              {account.note && (
+                <div className="mt-3 text-xs bg-gray-50 p-2 rounded border border-gray-100 text-gray-500 italic break-words line-clamp-2">
+                  หมายเหตุ: {account.note}
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

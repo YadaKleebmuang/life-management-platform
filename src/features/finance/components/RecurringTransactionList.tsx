@@ -371,6 +371,12 @@ export function RecurringTransactionList() {
                   </div>
                 </div>
 
+                {tx.note && (
+                  <div className="mb-4 text-xs bg-yellow-50 p-2 rounded border border-yellow-100 text-gray-700">
+                    <span className="font-medium">หมายเหตุ:</span> {tx.note}
+                  </div>
+                )}
+
                 <div className="flex justify-between items-center pt-2">
                   <button 
                     onClick={() => toggleStatus(tx)}

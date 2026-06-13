@@ -225,6 +225,7 @@ export function IncomeList() {
                       <td className="px-4 py-3 text-gray-900">
                         {income.title}
                         <div className="text-xs text-gray-500 block md:hidden">{getCategoryName(income.categoryId, income.source)}</div>
+                        {income.note && <div className="text-xs text-gray-400 mt-0.5 break-all line-clamp-1">{income.note}</div>}
                       </td>
                       <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{getCategoryName(income.categoryId, income.source)}</td>
                       <td className="px-4 py-3 text-gray-500">{getAccountName(income.accountId)}</td>
