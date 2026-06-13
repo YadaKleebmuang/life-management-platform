@@ -1,74 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Life Management Platform 🎯💰
 
-## Getting Started
+แพลตฟอร์มบริหารจัดการชีวิตและการเงินส่วนบุคคล (Personal Finance & Life Management) ที่จะช่วยให้คุณติดตามทุกความเคลื่อนไหวทางการเงินได้อย่างเป็นระบบ ทั้งรายรับ รายจ่าย การออมเงิน และการจัดการหนี้สิน ออกแบบมาให้ใช้งานง่าย ดีไซน์สวยงามทันสมัยแบบ Minimal Monochrome และมีระบบอัตโนมัติที่ช่วยให้การเงินของคุณเป็นระเบียบโดยไม่ต้องลงแรงเยอะ
 
-First, run the development server:
+## ✨ ฟีเจอร์หลัก (Key Features)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- 📊 **Dashboard & Analytics**: สรุปภาพรวมทางการเงินทั้งหมด ยอดเงินคงเหลือของทุกบัญชี และแสดงความคืบหน้าของเป้าหมายการออมในหน้าเดียว
+- 👛 **Account Management**: จัดการบัญชีกระเป๋าเงินได้หลากหลายประเภท เช่น เงินสด, บัญชีธนาคาร, E-Wallet และบัญชีเงินฝาก
+- 💸 **Income & Expense Tracking**: บันทึกรายรับ-รายจ่ายประจำวัน พร้อมจัดหมวดหมู่ที่ชัดเจน รวมถึงการโอนเงินระหว่างบัญชี (Transfer)
+- 🔄 **Recurring Transactions & Auto-Split**: ตั้งค่ารายการที่เกิดซ้ำอัตโนมัติ (เช่น เงินเดือนเข้า, ค่าเช่าห้อง) **พิเศษ!** รองรับการแบ่งเงินรายรับเข้าบัญชีต่างๆ อัตโนมัติตามสัดส่วนที่ตั้งไว้ (เช่น กฎ 70/20/10)
+- 🤝 **Debt Management**: ระบบบริหารจัดการหนี้สินแบบครบวงจร ทั้ง "หนี้สินที่เรายืมมา" และ "ลูกหนี้ที่ยืมเราไป" พร้อมระบบบันทึกประวัติการชำระเงินและคำนวณยอดคงเหลืออัตโนมัติ
+- 🎯 **Savings Goals**: ตั้งเป้าหมายการออมเงิน (เช่น เก็บเงินเที่ยว, ซื้อคอมพิวเตอร์) และติดตามความคืบหน้าผ่าน Progress Bar
+- ⚙️ **Financial Settings**: ตั้งค่าสัดส่วนการเงินอัตโนมัติ (Budget Allocation) และเพิ่ม/ลดหมวดหมู่รายรับ-รายจ่ายได้ตามไลฟ์สไตล์ของคุณ
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
+- **Database & Auth**: [Firebase](https://firebase.google.com/) (Firestore & Firebase Authentication)
+- **Language**: TypeScript
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 วิธีการติดตั้งและรันโปรเจกต์ (Getting Started)
 
-## Learn More
+1. **Clone project และติดตั้ง Dependencies**
+   ```bash
+   git clone <your-repo-url>
+   cd life-management-platform
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **ตั้งค่า Firebase**
+   - สร้างโปรเจกต์ใน [Firebase Console](https://console.firebase.google.com/)
+   - เปิดใช้งาน Firebase Authentication (Email/Password) และ Firestore Database
+   - นำค่า Configuration มาสร้างไฟล์ `.env.local` ที่ root ของโปรเจกต์:
+     ```env
+     NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+     NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+     NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+     NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+     ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+3. **รัน Development Server**
+   ```bash
+   npm run dev
+   ```
 
-## Project Structure
+4. เปิดเบราว์เซอร์ไปที่ [http://localhost:3000](http://localhost:3000)
 
-This project uses a feature-based architecture combined with Next.js App Router conventions:
+## 📁 โครงสร้างโปรเจกต์ (Project Structure)
+
+โปรเจกต์นี้ใช้สถาปัตยกรรมแบบ Feature-based ผสมผสานกับ Next.js App Router เพื่อความเป็นระเบียบและดูแลรักษาง่าย:
 
 ```text
 src/
-├── app/                  # Next.js App Router pages and layouts
-│   ├── finance/          # Finance module routes (income, expenses, summary, settings)
-│   ├── login/            # Login page route
-│   ├── register/         # Registration page route
-│   ├── globals.css       # Global stylesheet (Monochrome Design System)
-│   ├── layout.tsx        # Root layout with AuthProvider and MainLayout
-│   └── page.tsx          # Dashboard page
-│
-├── components/           # Shared UI components
-│   ├── layout/           # Global layout components (Header, Sidebar, MainLayout, ClientAppWrapper)
-│   └── ui/               # Reusable base components (Button, Input, Card)
-│
-├── features/             # Feature-based modules
-│   ├── auth/             # Authentication Module
-│   │   ├── components/   # Auth Guard
-│   │   ├── contexts/     # Auth Context
-│   │   ├── services/     # Firebase Auth service
-│   │   ├── types/        # Auth types
-│   │   └── utils/        # Auth utilities (error messages)
-│   │
-│   └── finance/          # Finance Module
-│       ├── components/   # Feature-specific components (DashboardSummary, IncomeList, ExpenseList, MonthlySummary, SettingsPanel)
-│       ├── hooks/        # Custom hooks (useFinanceData)
-│       ├── services/     # LocalStorage data services
-│       ├── types/        # Finance types (Income, Expense, BudgetAllocation)
-│       └── utils/        # Finance utilities (formatters, calculations)
-│
-└── lib/                  # Application-wide utilities and configurations
-    ├── firebase.ts       # Firebase initialization and config
-    └── utils.ts          # Generic utilities (e.g., tailwind clsx merge)
+├── app/                  # Routes ต่างๆ ของ Next.js
+├── components/           # UI Components ที่ใช้ร่วมกันทั้งแอป (เช่น ปุ่ม, การ์ด, Layout)
+├── features/             # แบ่ง Module ตามฟีเจอร์หลักของแอป
+│   ├── auth/             # ระบบยืนยันตัวตน (Login, Register, AuthContext)
+│   └── finance/          # ระบบจัดการการเงิน (Income, Expense, Goals, Debts, Recurring, etc.)
+└── lib/                  # Utilities และการตั้งค่าต่างๆ (เช่น Firebase config)
 ```
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🤝 การมีส่วนร่วม (Contributing)
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+ยินดีต้อนรับทุกคำแนะนำและการ Pull Request! หากพบเจอบั๊กหรือมีข้อเสนอแนะฟีเจอร์ใหม่ๆ สามารถเปิด Issue แจ้งไว้ได้เลยครับ
