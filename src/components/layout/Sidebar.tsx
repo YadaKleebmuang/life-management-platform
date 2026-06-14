@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Wallet, Receipt, PieChart, Settings, Activity, Building2, ArrowRightLeft, Tags, Scale, Target, Repeat, X } from "lucide-react";
+import { LayoutDashboard, Wallet, Receipt, PieChart, Settings, Building2, ArrowRightLeft, Tags, Scale, Target, Repeat, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -44,7 +44,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       )}>
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center">
-            <Activity className="h-6 w-6 text-gray-900 mr-2" />
+            <img src="/favicon.ico" alt="Life Platform Logo" className="w-6 h-6 mr-2 rounded-sm" />
             <span className="text-xl font-bold text-gray-900">
               Life Platform
             </span>

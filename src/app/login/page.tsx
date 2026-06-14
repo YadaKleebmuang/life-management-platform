@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Activity } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,9 +35,11 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA] p-4">
       <Card className="w-full max-w-md border-gray-200">
         <CardHeader className="text-center pb-6 pt-8">
+          
+          {/* โลโก้ของแอปพลิเคชัน */}
           <div className="flex justify-center mb-4">
-            <div className="h-12 w-12 bg-gray-900 rounded-xl flex items-center justify-center shadow-sm">
-              <Activity className="h-6 w-6 text-white" />
+            <div className="h-12 w-12 bg-white border border-gray-200 rounded-xl flex items-center justify-center shadow-sm overflow-hidden">
+              <img src="/favicon.ico" alt="Logo" className="w-8 h-8 object-contain" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900 tracking-tight">
