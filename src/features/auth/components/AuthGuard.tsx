@@ -12,8 +12,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // ตั้งเวลาให้ออกจากระบบอัตโนมัติหากไม่มีการใช้งาน 15 นาที
-  useAutoLogout(5 * 60 * 1000);
+  // ตั้งเวลาให้ออกจากระบบอัตโนมัติหากไม่มีการใช้งาน 10 นาที
+  useAutoLogout(10 * 60 * 1000);
 
   useEffect(() => {
     if (!loading) {

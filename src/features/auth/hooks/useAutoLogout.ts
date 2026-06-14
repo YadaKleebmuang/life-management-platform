@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { logoutUser } from "../services/authService";
 
-export function useAutoLogout(timeoutMs: number = 15 * 60 * 1000) { // Default 15 minutes
+export function useAutoLogout(timeoutMs: number = 10 * 60 * 1000) { // Default 10 minutes
   const { user } = useAuth();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
