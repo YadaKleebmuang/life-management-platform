@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { name: "แดชบอร์ด", href: "/", icon: LayoutDashboard },
   { name: "บัญชีของฉัน", href: "/finance/accounts", icon: Building2 },
-  { name: "งาน", href: "/work-sheet", icon: ClipboardList },
+  { name: "ติดตามงาน", href: "/work-sheet", icon: ClipboardList },
   { name: "ธุรกรรมการเงิน", href: "/finance/transactions", icon: ArrowRightLeft },
   { name: "เป้าหมายการออม", href: "/finance/goals", icon: Target },
   { name: "หนี้สิน", href: "/finance/debts", icon: Scale },
