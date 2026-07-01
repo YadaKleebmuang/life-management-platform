@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase";
-import { collection, doc, getDocs, query, orderBy, runTransaction } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, orderBy, runTransaction, where } from "firebase/firestore";
 import { Transfer, Transaction as AppTransaction, AccountSnapshot, Account } from "../types";
 
 export const getTransfers = async (userId: string): Promise<Transfer[]> => {
@@ -118,5 +118,51 @@ export const saveTransfer = async (userId: string, transfer: Transfer): Promise<
 
     transaction.set(doc(db, "users", userId, "accountSnapshots", snapSourceId), snapSource);
     transaction.set(doc(db, "users", userId, "accountSnapshots", snapDestId), snapDest);
+  });
+};
+
+export const deleteTransfer = async (userId: string, transferId: string): Promise<void> => {
+  if (!userId) return;
+
+  const transferRef = doc(db, "users", userId, "transfers", transferId);
+  const transferDoc = await getDoc(transferRef);
+  if (!transferDoc.exists()) return;
+
+  const transfer = transferDoc.data() as Transfer;
+  const transactionsQuery = query(
+    collection(db, "users", userId, "transactions"),
+    where("relatedDocumentId", "==", transferId)
+  );
+  const snapshotsQuery = query(
+    collection(db, "users", userId, "accountSnapshots"),
+    where("sourceId", "==", transferId)
+  );
+
+  const [transactionsSnap, snapshotsSnap] = await Promise.all([getDocs(transactionsQuery), getDocs(snapshotsQuery)]);
+
+  await runTransaction(db, async (transaction) => {
+    const sourceRef = doc(db, "users", userId, "accounts", transfer.fromAccountId);
+    const destRef = doc(db, "users", userId, "accounts", transfer.toAccountId);
+    const [sourceDoc, destDoc] = await Promise.all([transaction.get(sourceRef), transaction.get(destRef)]);
+
+    if (sourceDoc.exists()) {
+      const sourceData = sourceDoc.data() as Account;
+      transaction.update(sourceRef, {
+        currentBalance: sourceData.currentBalance + transfer.amount,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    if (destDoc.exists()) {
+      const destData = destDoc.data() as Account;
+      transaction.update(destRef, {
+        currentBalance: destData.currentBalance - transfer.amount,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    transaction.delete(transferRef);
+    transactionsSnap.forEach((docSnap) => transaction.delete(docSnap.ref));
+    snapshotsSnap.forEach((docSnap) => transaction.delete(docSnap.ref));
   });
 };

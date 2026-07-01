@@ -1,21 +1,5 @@
-import { ExpenseList } from "@/features/finance/components/ExpenseList";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "รายจ่าย | Life Platform",
-};
+import { redirect } from "next/navigation";
 
 export default function ExpensesPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">จัดการรายจ่าย</h1>
-        <p className="text-gray-500 mt-1">
-          บันทึกและตรวจสอบค่าใช้จ่ายของคุณ
-        </p>
-      </div>
-      
-      <ExpenseList />
-    </div>
-  );
+  redirect("/finance/transactions?type=expense");
 }

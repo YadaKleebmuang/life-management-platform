@@ -3,16 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Wallet, Receipt, PieChart, Settings, Building2, ArrowRightLeft, Tags, Scale, Target, Repeat, X, ClipboardList } from "lucide-react";
+import { LayoutDashboard, PieChart, Settings, Building2, Tags, Scale, Target, Repeat, X, ClipboardList, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { name: "แดชบอร์ด", href: "/", icon: LayoutDashboard },
   { name: "บัญชีของฉัน", href: "/finance/accounts", icon: Building2 },
-  { name: "Work Sheet", href: "/work-sheet", icon: ClipboardList },
-  { name: "รายรับ", href: "/finance/income", icon: Wallet },
-  { name: "รายจ่าย", href: "/finance/expenses", icon: Receipt },
-  { name: "โอนเงิน", href: "/finance/transfers", icon: ArrowRightLeft },
+  { name: "งาน", href: "/work-sheet", icon: ClipboardList },
+  { name: "ธุรกรรมการเงิน", href: "/finance/transactions", icon: ArrowRightLeft },
   { name: "เป้าหมายการออม", href: "/finance/goals", icon: Target },
   { name: "หนี้สิน", href: "/finance/debts", icon: Scale },
   { name: "รายการประจำ", href: "/finance/recurring-transactions", icon: Repeat },
@@ -31,7 +29,6 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile Overlay Background */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 md:hidden"
@@ -39,7 +36,6 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         />
       )}
 
-      {/* Sidebar Content */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-50 w-64 bg-[#FAFAFA] border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out md:static md:translate-x-0",
         isOpen ? "translate-x-0" : "-translate-x-full"
@@ -71,7 +67,6 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 onClick={() => {
-                  // Close sidebar when clicking a link on mobile
                   if (window.innerWidth < 768 && onClose) {
                     onClose();
                   }

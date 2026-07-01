@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Transfer } from "../types";
 import { getTransfers, saveTransfer } from "../services/transferService";
 import { useAuth } from "@/features/auth/contexts/AuthContext";
+import { notifyFinanceChanged } from "../utils/financeEvents";
 
 export function useTransfers() {
   const { user } = useAuth();
@@ -47,6 +48,7 @@ export function useTransfers() {
     };
     await saveTransfer(userId, newTransfer);
     await loadTransfers();
+    notifyFinanceChanged();
   };
 
   return {
