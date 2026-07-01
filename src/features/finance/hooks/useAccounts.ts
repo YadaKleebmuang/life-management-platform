@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Account, AccountType } from "../types";
 import { getAccounts, saveAccount, deleteAccount } from "../services/accountService";
 import { useAuth } from "@/features/auth/contexts/AuthContext";
+import { subscribeFinanceChanged } from "../utils/financeEvents";
 
 export function useAccounts() {
   const { user } = useAuth();
@@ -30,6 +31,8 @@ export function useAccounts() {
   useEffect(() => {
     loadAccounts();
   }, [loadAccounts]);
+
+  useEffect(() => subscribeFinanceChanged(loadAccounts), [loadAccounts]);
 
   const addAccount = async (accountData: Omit<Account, "id" | "userId" | "createdAt" | "updatedAt" | "currentBalance">) => {
     if (!user?.uid) return;

@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
-import { collection, doc, getDocs, query, orderBy, runTransaction } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, orderBy, runTransaction, type DocumentReference } from "firebase/firestore";
 import { Income, Transaction as AppTransaction, AccountSnapshot, Account } from "../types";
+import { getRelatedSnapshotRefs, getRelatedTransactionRefs } from "./relatedRecordService";
 
 export const getIncomes = async (userId: string): Promise<Income[]> => {
   if (!userId) return [];
@@ -19,28 +20,79 @@ export const getIncomes = async (userId: string): Promise<Income[]> => {
 export const saveIncome = async (userId: string, income: Income): Promise<void> => {
   if (!userId) return;
 
+  const incomeRef = doc(db, "users", userId, "incomes", income.id);
+  const existingIncomeDoc = await getDoc(incomeRef);
+  const existingIncome = existingIncomeDoc.exists() ? (existingIncomeDoc.data() as Income) : null;
+  const [relatedTransactionRefs, relatedSnapshotRefs]: [DocumentReference[], DocumentReference[]] = existingIncome
+    ? await Promise.all([
+        getRelatedTransactionRefs(userId, income.id),
+        getRelatedSnapshotRefs(userId, income.id),
+      ])
+    : [[], []];
+
   await runTransaction(db, async (transaction) => {
-    // 1. Fetch the account to get current balance
-    const accountRef = doc(db, "users", userId, "accounts", income.accountId);
-    const accountDoc = await transaction.get(accountRef);
-    
-    if (!accountDoc.exists()) {
-      throw new Error("Account does not exist!");
+    const now = new Date().toISOString();
+    let snapshotAccountData: Account | null = null;
+    let newBalance = 0;
+
+    if (existingIncome) {
+      if (existingIncome.accountId === income.accountId) {
+        const accountRef = doc(db, "users", userId, "accounts", income.accountId);
+        const accountDoc = await transaction.get(accountRef);
+
+        if (!accountDoc.exists()) {
+          throw new Error("Account does not exist!");
+        }
+
+        const accountData = accountDoc.data() as Account;
+        newBalance = accountData.currentBalance - existingIncome.amount + income.amount;
+        snapshotAccountData = accountData;
+        transaction.update(accountRef, { currentBalance: newBalance, updatedAt: now });
+      } else {
+        const oldAccountRef = doc(db, "users", userId, "accounts", existingIncome.accountId);
+        const oldAccountDoc = await transaction.get(oldAccountRef);
+
+        if (oldAccountDoc.exists()) {
+          const oldAccountData = oldAccountDoc.data() as Account;
+          transaction.update(oldAccountRef, {
+            currentBalance: oldAccountData.currentBalance - existingIncome.amount,
+            updatedAt: now,
+          });
+        }
+
+        const newAccountRef = doc(db, "users", userId, "accounts", income.accountId);
+        const newAccountDoc = await transaction.get(newAccountRef);
+
+        if (!newAccountDoc.exists()) {
+          throw new Error("Account does not exist!");
+        }
+
+        const newAccountData = newAccountDoc.data() as Account;
+        newBalance = newAccountData.currentBalance + income.amount;
+        snapshotAccountData = newAccountData;
+        transaction.update(newAccountRef, { currentBalance: newBalance, updatedAt: now });
+      }
+
+      relatedTransactionRefs.forEach((ref) => transaction.delete(ref));
+      relatedSnapshotRefs.forEach((ref) => transaction.delete(ref));
+    } else {
+      const accountRef = doc(db, "users", userId, "accounts", income.accountId);
+      const accountDoc = await transaction.get(accountRef);
+
+      if (!accountDoc.exists()) {
+        throw new Error("Account does not exist!");
+      }
+
+      const accountData = accountDoc.data() as Account;
+      newBalance = accountData.currentBalance + income.amount;
+      snapshotAccountData = accountData;
+      transaction.update(accountRef, { currentBalance: newBalance, updatedAt: now });
     }
-    
-    const accountData = accountDoc.data() as Account;
-    const newBalance = accountData.currentBalance + income.amount;
 
-    // 2. Update Account
-    transaction.update(accountRef, { currentBalance: newBalance, updatedAt: new Date().toISOString() });
-
-    // 3. Save Income
-    const incomeRef = doc(db, "users", userId, "incomes", income.id);
     transaction.set(incomeRef, income);
 
     // 4. Create Transaction Record
     const transactionId = crypto.randomUUID();
-    const now = new Date().toISOString();
     const appTx: AppTransaction = {
       id: transactionId,
       userId,
@@ -58,11 +110,14 @@ export const saveIncome = async (userId: string, income: Income): Promise<void> 
 
     // 5. Create Account Snapshot
     const snapshotId = crypto.randomUUID();
+    if (!snapshotAccountData) {
+      throw new Error("Account data is missing!");
+    }
     const snapshot: AccountSnapshot = {
       id: snapshotId,
       userId,
       accountId: income.accountId,
-      accountName: accountData.accountName,
+      accountName: snapshotAccountData.accountName,
       balance: newBalance,
       snapshotDate: income.date,
       sourceType: "income",
@@ -76,23 +131,29 @@ export const saveIncome = async (userId: string, income: Income): Promise<void> 
 
 export const deleteIncome = async (userId: string, incomeId: string, accountId: string, amount: number): Promise<void> => {
   if (!userId) return;
-  
+
+  const incomeRef = doc(db, "users", userId, "incomes", incomeId);
+  const incomeDoc = await getDoc(incomeRef);
+  const incomeData = incomeDoc.exists() ? (incomeDoc.data() as Income) : null;
+  const targetAccountId = incomeData?.accountId || accountId;
+  const targetAmount = incomeData?.amount ?? amount;
+  const [relatedTransactionRefs, relatedSnapshotRefs] = await Promise.all([
+    getRelatedTransactionRefs(userId, incomeId),
+    getRelatedSnapshotRefs(userId, incomeId),
+  ]);
+
   await runTransaction(db, async (transaction) => {
-    const accountRef = doc(db, "users", userId, "accounts", accountId);
+    const accountRef = doc(db, "users", userId, "accounts", targetAccountId);
     const accountDoc = await transaction.get(accountRef);
-    
+
     if (accountDoc.exists()) {
       const accountData = accountDoc.data() as Account;
-      // Reverse the income
-      const newBalance = accountData.currentBalance - amount;
+      const newBalance = accountData.currentBalance - targetAmount;
       transaction.update(accountRef, { currentBalance: newBalance, updatedAt: new Date().toISOString() });
     }
 
-    const incomeRef = doc(db, "users", userId, "incomes", incomeId);
     transaction.delete(incomeRef);
-    
-    // We should ideally also delete or mark the transaction as deleted, but for simplicity we will just let it be, or delete it by querying.
-    // However, runTransaction doesn't easily let us query transactions by relatedDocumentId without a separate fetch.
-    // So we'll skip transaction cleanup for now, as it requires querying.
+    relatedTransactionRefs.forEach((ref) => transaction.delete(ref));
+    relatedSnapshotRefs.forEach((ref) => transaction.delete(ref));
   });
 };

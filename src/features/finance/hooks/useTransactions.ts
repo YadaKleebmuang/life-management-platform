@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Transaction } from "../types";
 import { getTransactions } from "../services/transactionService";
 import { useAuth } from "@/features/auth/contexts/AuthContext";
+import { subscribeFinanceChanged } from "../utils/financeEvents";
 
 export function useTransactions() {
   const { user } = useAuth();
@@ -30,6 +31,8 @@ export function useTransactions() {
   useEffect(() => {
     loadTransactions();
   }, [loadTransactions]);
+
+  useEffect(() => subscribeFinanceChanged(loadTransactions), [loadTransactions]);
 
   return {
     transactions,

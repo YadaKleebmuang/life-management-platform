@@ -7,6 +7,7 @@ import { getExpenses, saveExpense, deleteExpense } from "../services/expenseServ
 import { getAllocation, saveAllocation } from "../services/budgetService";
 import { calculateSummary } from "../utils/calculations";
 import { useAuth } from "@/features/auth/contexts/AuthContext";
+import { notifyFinanceChanged } from "../utils/financeEvents";
 
 export function useFinanceData() {
   const { user } = useAuth();
@@ -72,18 +73,21 @@ export function useFinanceData() {
     };
     await saveIncome(user.uid, newIncome);
     await loadData();
+    notifyFinanceChanged();
   };
 
   const updateIncome = async (income: Income) => {
     if (!user?.uid) return;
     await saveIncome(user.uid, income);
     await loadData();
+    notifyFinanceChanged();
   };
 
   const removeIncome = async (income: Income) => {
     if (!user?.uid) return;
     await deleteIncome(user.uid, income.id, income.accountId, income.amount);
     await loadData();
+    notifyFinanceChanged();
   };
 
   // Expense Methods
@@ -96,18 +100,21 @@ export function useFinanceData() {
     };
     await saveExpense(user.uid, newExpense);
     await loadData();
+    notifyFinanceChanged();
   };
 
   const updateExpense = async (expense: Expense) => {
     if (!user?.uid) return;
     await saveExpense(user.uid, expense);
     await loadData();
+    notifyFinanceChanged();
   };
 
   const removeExpense = async (expense: Expense) => {
     if (!user?.uid) return;
     await deleteExpense(user.uid, expense.id, expense.accountId, expense.amount);
     await loadData();
+    notifyFinanceChanged();
   };
 
   // Allocation Methods

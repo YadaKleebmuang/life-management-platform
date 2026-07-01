@@ -1,13 +1,6 @@
 import type { Metadata } from "next";
-import { Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
 import { ClientAppWrapper } from "@/components/layout/ClientAppWrapper";
-
-const notoSansThai = Noto_Sans_Thai({
-  subsets: ["thai", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-noto-sans-thai",
-});
 
 export const metadata: Metadata = {
   title: "Life Management Platform",
@@ -20,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={`${notoSansThai.variable}`}>
+    <html lang="th">
       <body className="font-sans antialiased">
         <ClientAppWrapper>{children}</ClientAppWrapper>
       </body>
