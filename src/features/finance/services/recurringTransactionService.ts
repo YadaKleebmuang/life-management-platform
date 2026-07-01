@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase";
-import { collection, doc, getDocs, getDoc, query, orderBy, setDoc, deleteDoc, runTransaction, where, writeBatch } from "firebase/firestore";
+import { collection, doc, getDocs, getDoc, query, orderBy, setDoc, runTransaction, where, writeBatch } from "firebase/firestore";
 import { RecurringTransaction, Income, Expense, Account, AccountSnapshot, Transaction as AppTransaction } from "../types";
 import { getAllocation } from "./budgetService";
 

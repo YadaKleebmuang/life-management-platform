@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Wallet, Receipt, PieChart, Settings, Building2, ArrowRightLeft, Tags, Scale, Target, Repeat, X } from "lucide-react";
+import { LayoutDashboard, Wallet, Receipt, PieChart, Settings, Building2, ArrowRightLeft, Tags, Scale, Target, Repeat, X, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { name: "แดชบอร์ด", href: "/", icon: LayoutDashboard },
   { name: "บัญชีของฉัน", href: "/finance/accounts", icon: Building2 },
+  { name: "Work Sheet", href: "/work-sheet", icon: ClipboardList },
   { name: "รายรับ", href: "/finance/income", icon: Wallet },
   { name: "รายจ่าย", href: "/finance/expenses", icon: Receipt },
   { name: "โอนเงิน", href: "/finance/transfers", icon: ArrowRightLeft },
@@ -44,7 +46,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       )}>
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center">
-            <img src="/favicon.ico" alt="Life Platform Logo" className="w-6 h-6 mr-2 rounded-sm" />
+            <Image src="/favicon.ico" alt="Life Platform Logo" width={24} height={24} className="w-6 h-6 mr-2 rounded-sm" />
             <span className="text-xl font-bold text-gray-900">
               Life Platform
             </span>

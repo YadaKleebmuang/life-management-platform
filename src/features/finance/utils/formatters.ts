@@ -14,7 +14,7 @@ export function formatDateThai(dateString: string): string {
   try {
     const date = parseISO(dateString);
     return format(date, "dd MMM yyyy", { locale: th });
-  } catch (e) {
+  } catch {
     return dateString;
   }
 }

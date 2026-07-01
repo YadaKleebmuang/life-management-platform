@@ -12,31 +12,32 @@ import { useAuth } from "@/features/auth/contexts/AuthContext";
 
 export function useRecurringTransactions() {
   const { user } = useAuth();
+  const userId = user?.uid ?? "";
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadTransactions = useCallback(async () => {
-    if (!user?.uid) {
+    if (!userId) {
       setLoading(false);
       return;
     }
 
     setLoading(true);
     try {
-      const loaded = await getRecurringTransactions(user.uid);
+      const loaded = await getRecurringTransactions(userId);
       setRecurringTransactions(loaded);
     } catch (error) {
       console.error("Error loading recurring transactions:", error);
     } finally {
       setLoading(false);
     }
-  }, [user?.uid]);
+  }, [userId]);
 
   // Optionally trigger automation on load
   const triggerAutomation = useCallback(async () => {
-    if (!user?.uid) return 0;
+    if (!userId) return 0;
     try {
-      const processedCount = await processRecurringTransactions(user.uid);
+      const processedCount = await processRecurringTransactions(userId);
       if (processedCount > 0) {
         await loadTransactions();
       }
@@ -45,14 +46,18 @@ export function useRecurringTransactions() {
       console.error("Error processing recurring transactions:", error);
       return 0;
     }
-  }, [user?.uid, loadTransactions]);
+  }, [userId, loadTransactions]);
 
   useEffect(() => {
-    loadTransactions();
+    const timer = window.setTimeout(() => {
+      void loadTransactions();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [loadTransactions]);
 
   const addTransaction = async (txData: Omit<RecurringTransaction, "id" | "userId" | "createdAt" | "updatedAt" | "nextRunDate" | "isActive">) => {
-    if (!user?.uid) return;
+    if (!userId) return;
     const now = new Date().toISOString();
     
     // Calculate initial nextRunDate (same as startDate)
@@ -61,30 +66,30 @@ export function useRecurringTransactions() {
     const newTx: RecurringTransaction = {
       ...txData,
       id: crypto.randomUUID(),
-      userId: user.uid,
+      userId,
       isActive: true,
       nextRunDate,
       createdAt: now,
       updatedAt: now,
     };
-    await saveRecurringTransaction(user.uid, newTx);
+    await saveRecurringTransaction(userId, newTx);
     await loadTransactions();
   };
 
   const toggleStatus = async (tx: RecurringTransaction) => {
-    if (!user?.uid) return;
+    if (!userId) return;
     const updated = { 
       ...tx, 
       isActive: !tx.isActive,
       updatedAt: new Date().toISOString() 
     };
-    await saveRecurringTransaction(user.uid, updated);
+    await saveRecurringTransaction(userId, updated);
     await loadTransactions();
   };
 
   const removeTransaction = async (txId: string) => {
-    if (!user?.uid) return;
-    await deleteRecurringTransaction(user.uid, txId);
+    if (!userId) return;
+    await deleteRecurringTransaction(userId, txId);
     await loadTransactions();
   };
 

@@ -48,7 +48,11 @@ export function RecurringTransactionList() {
 
   // Trigger automation on load to process any due transactions
   useEffect(() => {
-    triggerAutomation();
+    const timer = window.setTimeout(() => {
+      void triggerAutomation();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [triggerAutomation]);
 
   const activeCategories = type === "income" 
@@ -105,9 +109,9 @@ export function RecurringTransactionList() {
       
       // Check if the newly added transaction needs to run immediately
       triggerAutomation();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "เกิดข้อผิดพลาด");
+      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     } finally {
       setSaving(false);
     }

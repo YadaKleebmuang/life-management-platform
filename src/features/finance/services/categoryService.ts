@@ -1,6 +1,6 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, writeBatch } from "firebase/firestore";
-import { Category, CategoryType } from "../types";
+import { Category } from "../types";
 
 const defaultIncomeCategories = ["Salary", "Family", "Freelance", "Gift", "Other"];
 const defaultExpenseCategories = ["Food", "Travel", "Education", "Shopping", "Health", "Entertainment", "Bills", "Other"];

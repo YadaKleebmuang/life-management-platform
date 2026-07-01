@@ -74,9 +74,9 @@ export function DebtList() {
       setShowAddForm(false);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "เกิดข้อผิดพลาด");
+      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     } finally {
       setSaving(false);
     }
@@ -119,9 +119,9 @@ export function DebtList() {
       setShowRepayFormId(null);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "เกิดข้อผิดพลาด");
+      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     } finally {
       setSaving(false);
     }

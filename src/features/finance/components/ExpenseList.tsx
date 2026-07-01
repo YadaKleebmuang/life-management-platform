@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useFinanceData } from "../hooks/useFinanceData";
 import { useAccounts } from "../hooks/useAccounts";
 import { useCategories } from "../hooks/useCategories";
-import { formatCurrency, formatDateThai } from "../utils/formatters";
+import { formatCurrency } from "../utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { Expense } from "../types";
 import { Trash2, Edit2 } from "lucide-react";
 
 export function ExpenseList() {
@@ -72,7 +73,7 @@ export function ExpenseList() {
     }
   };
 
-  const handleEdit = (expense: any) => {
+  const handleEdit = (expense: Expense) => {
     setEditingId(expense.id);
     setDate(expense.date);
     setTitle(expense.title);

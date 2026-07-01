@@ -5,7 +5,7 @@ import { useAccounts } from "../hooks/useAccounts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AccountType } from "../types";
+import { Account, AccountType } from "../types";
 import { Edit2, ToggleLeft, ToggleRight, Wallet, Building2, Smartphone, PiggyBank, Plus } from "lucide-react";
 
 const formatCurrency = (amount: number) => {
@@ -75,7 +75,7 @@ export function AccountList() {
     }
   };
 
-  const handleEdit = (account: any) => {
+  const handleEdit = (account: Account) => {
     setEditingId(account.id);
     setAccountName(account.accountName);
     setAccountType(account.accountType);

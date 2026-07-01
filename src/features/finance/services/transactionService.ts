@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase";
-import { collection, doc, getDocs, setDoc, query, orderBy, writeBatch } from "firebase/firestore";
+import { collection, doc, getDocs, setDoc, query, orderBy } from "firebase/firestore";
 import { Transaction } from "../types";
 
 export const getTransactions = async (userId: string): Promise<Transaction[]> => {

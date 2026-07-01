@@ -9,7 +9,6 @@ export function calculateSummary(
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const balance = totalIncome - totalExpenses;
 
-  const spendingMoney = (totalIncome * allocation.spendingPercentage) / 100;
   const savings = (totalIncome * allocation.savingsPercentage) / 100;
   const emergencyFund = (totalIncome * allocation.emergencyFundPercentage) / 100;
 

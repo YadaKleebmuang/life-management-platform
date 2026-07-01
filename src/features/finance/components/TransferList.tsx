@@ -58,9 +58,9 @@ export function TransferList() {
       resetForm();
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error saving transfer:", err);
-      setError(err.message || "เกิดข้อผิดพลาดในการโอนเงิน");
+      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการโอนเงิน");
     } finally {
       setSaving(false);
     }

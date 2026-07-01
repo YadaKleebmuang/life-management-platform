@@ -5,7 +5,7 @@ import { useCategories } from "../hooks/useCategories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CategoryType } from "../types";
+import { Category, CategoryType } from "../types";
 import { Edit2, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 
 export function CategoryList() {
@@ -43,7 +43,7 @@ export function CategoryList() {
     }
   };
 
-  const handleEdit = (category: any) => {
+  const handleEdit = (category: Category) => {
     setEditingId(category.id);
     setName(category.name);
     setType(category.type);
@@ -60,7 +60,7 @@ export function CategoryList() {
   const incomeCategories = categories.filter(c => c.type === "income");
   const expenseCategories = categories.filter(c => c.type === "expense");
 
-  const renderTable = (cats: any[], title: string) => (
+  const renderTable = (cats: Category[], title: string) => (
     <div className="mt-8">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
       <div className="overflow-x-auto">

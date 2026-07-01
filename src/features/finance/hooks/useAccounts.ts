@@ -1,71 +1,76 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Account, AccountType } from "../types";
+import { Account } from "../types";
 import { getAccounts, saveAccount, deleteAccount } from "../services/accountService";
 import { useAuth } from "@/features/auth/contexts/AuthContext";
 import { subscribeFinanceChanged } from "../utils/financeEvents";
 
 export function useAccounts() {
   const { user } = useAuth();
+  const userId = user?.uid ?? "";
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadAccounts = useCallback(async () => {
-    if (!user?.uid) {
+    if (!userId) {
       setLoading(false);
       return;
     }
 
     setLoading(true);
     try {
-      const loaded = await getAccounts(user.uid);
+      const loaded = await getAccounts(userId);
       setAccounts(loaded);
     } catch (error) {
       console.error("Error loading accounts:", error);
     } finally {
       setLoading(false);
     }
-  }, [user?.uid]);
+  }, [userId]);
 
   useEffect(() => {
-    loadAccounts();
+    const timer = window.setTimeout(() => {
+      void loadAccounts();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [loadAccounts]);
 
   useEffect(() => subscribeFinanceChanged(loadAccounts), [loadAccounts]);
 
   const addAccount = async (accountData: Omit<Account, "id" | "userId" | "createdAt" | "updatedAt" | "currentBalance">) => {
-    if (!user?.uid) return;
+    if (!userId) return;
     const now = new Date().toISOString();
     const newAccount: Account = {
       ...accountData,
       id: crypto.randomUUID(),
-      userId: user.uid,
+      userId,
       currentBalance: accountData.initialBalance,
       createdAt: now,
       updatedAt: now,
     };
-    await saveAccount(user.uid, newAccount);
+    await saveAccount(userId, newAccount);
     await loadAccounts();
   };
 
   const updateAccount = async (account: Account) => {
-    if (!user?.uid) return;
+    if (!userId) return;
     const updated = { ...account, updatedAt: new Date().toISOString() };
-    await saveAccount(user.uid, updated);
+    await saveAccount(userId, updated);
     await loadAccounts();
   };
 
   const removeAccount = async (id: string) => {
-    if (!user?.uid) return;
-    await deleteAccount(user.uid, id);
+    if (!userId) return;
+    await deleteAccount(userId, id);
     await loadAccounts();
   };
 
   const toggleAccountActive = async (account: Account) => {
-    if (!user?.uid) return;
+    if (!userId) return;
     const updated = { ...account, isActive: !account.isActive, updatedAt: new Date().toISOString() };
-    await saveAccount(user.uid, updated);
+    await saveAccount(userId, updated);
     await loadAccounts();
   };
 

@@ -7,40 +7,45 @@ import { useAuth } from "@/features/auth/contexts/AuthContext";
 
 export function useTransfers() {
   const { user } = useAuth();
+  const userId = user?.uid ?? "";
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadTransfers = useCallback(async () => {
-    if (!user?.uid) {
+    if (!userId) {
       setLoading(false);
       return;
     }
 
     setLoading(true);
     try {
-      const loaded = await getTransfers(user.uid);
+      const loaded = await getTransfers(userId);
       setTransfers(loaded);
     } catch (error) {
       console.error("Error loading transfers:", error);
     } finally {
       setLoading(false);
     }
-  }, [user?.uid]);
+  }, [userId]);
 
   useEffect(() => {
-    loadTransfers();
+    const timer = window.setTimeout(() => {
+      void loadTransfers();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [loadTransfers]);
 
   const addTransfer = async (transferData: Omit<Transfer, "id" | "userId" | "createdAt">) => {
-    if (!user?.uid) return;
+    if (!userId) return;
     const now = new Date().toISOString();
     const newTransfer: Transfer = {
       ...transferData,
       id: crypto.randomUUID(),
-      userId: user.uid,
+      userId,
       createdAt: now,
     };
-    await saveTransfer(user.uid, newTransfer);
+    await saveTransfer(userId, newTransfer);
     await loadTransfers();
   };
 

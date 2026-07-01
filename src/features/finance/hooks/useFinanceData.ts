@@ -11,6 +11,7 @@ import { notifyFinanceChanged } from "../utils/financeEvents";
 
 export function useFinanceData() {
   const { user } = useAuth();
+  const userId = user?.uid ?? "";
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [allocation, setAllocation] = useState<BudgetAllocation>({
@@ -29,7 +30,7 @@ export function useFinanceData() {
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
-    if (!user?.uid) {
+    if (!userId) {
       setLoading(false);
       return;
     }
@@ -37,9 +38,9 @@ export function useFinanceData() {
     setLoading(true);
     try {
       const [loadedIncomes, loadedExpenses, loadedAllocation] = await Promise.all([
-        getIncomes(user.uid),
-        getExpenses(user.uid),
-        getAllocation(user.uid),
+        getIncomes(userId),
+        getExpenses(userId),
+        getAllocation(userId),
       ]);
 
       setIncomes(loadedIncomes);
@@ -57,70 +58,74 @@ export function useFinanceData() {
     } finally {
       setLoading(false);
     }
-  }, [user?.uid]);
+  }, [userId]);
 
   useEffect(() => {
-    loadData();
+    const timer = window.setTimeout(() => {
+      void loadData();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [loadData]);
 
   // Income Methods
   const addIncome = async (income: Omit<Income, "id" | "createdAt">) => {
-    if (!user?.uid) return;
+    if (!userId) return;
     const newIncome: Income = {
       ...income,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };
-    await saveIncome(user.uid, newIncome);
+    await saveIncome(userId, newIncome);
     await loadData();
     notifyFinanceChanged();
   };
 
   const updateIncome = async (income: Income) => {
-    if (!user?.uid) return;
-    await saveIncome(user.uid, income);
+    if (!userId) return;
+    await saveIncome(userId, income);
     await loadData();
     notifyFinanceChanged();
   };
 
   const removeIncome = async (income: Income) => {
-    if (!user?.uid) return;
-    await deleteIncome(user.uid, income.id, income.accountId, income.amount);
+    if (!userId) return;
+    await deleteIncome(userId, income.id, income.accountId, income.amount);
     await loadData();
     notifyFinanceChanged();
   };
 
   // Expense Methods
   const addExpense = async (expense: Omit<Expense, "id" | "createdAt">) => {
-    if (!user?.uid) return;
+    if (!userId) return;
     const newExpense: Expense = {
       ...expense,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };
-    await saveExpense(user.uid, newExpense);
+    await saveExpense(userId, newExpense);
     await loadData();
     notifyFinanceChanged();
   };
 
   const updateExpense = async (expense: Expense) => {
-    if (!user?.uid) return;
-    await saveExpense(user.uid, expense);
+    if (!userId) return;
+    await saveExpense(userId, expense);
     await loadData();
     notifyFinanceChanged();
   };
 
   const removeExpense = async (expense: Expense) => {
-    if (!user?.uid) return;
-    await deleteExpense(user.uid, expense.id, expense.accountId, expense.amount);
+    if (!userId) return;
+    await deleteExpense(userId, expense.id, expense.accountId, expense.amount);
     await loadData();
     notifyFinanceChanged();
   };
 
   // Allocation Methods
   const updateAllocation = async (newAllocation: BudgetAllocation) => {
-    if (!user?.uid) return;
-    await saveAllocation(user.uid, newAllocation);
+    if (!userId) return;
+    await saveAllocation(userId, newAllocation);
     await loadData();
   };
 

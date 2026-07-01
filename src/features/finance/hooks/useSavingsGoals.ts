@@ -12,65 +12,70 @@ import { useAuth } from "@/features/auth/contexts/AuthContext";
 
 export function useSavingsGoals() {
   const { user } = useAuth();
+  const userId = user?.uid ?? "";
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadGoals = useCallback(async () => {
-    if (!user?.uid) {
+    if (!userId) {
       setLoading(false);
       return;
     }
 
     setLoading(true);
     try {
-      const loaded = await getSavingsGoals(user.uid);
+      const loaded = await getSavingsGoals(userId);
       setGoals(loaded);
     } catch (error) {
       console.error("Error loading savings goals:", error);
     } finally {
       setLoading(false);
     }
-  }, [user?.uid]);
+  }, [userId]);
 
   useEffect(() => {
-    loadGoals();
+    const timer = window.setTimeout(() => {
+      void loadGoals();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [loadGoals]);
 
   const addGoal = async (goalData: Omit<SavingsGoal, "id" | "userId" | "currentAmount" | "createdAt" | "updatedAt">) => {
-    if (!user?.uid) return;
+    if (!userId) return;
     const now = new Date().toISOString();
     
     const newGoal: SavingsGoal = {
       ...goalData,
       id: crypto.randomUUID(),
-      userId: user.uid,
+      userId,
       currentAmount: 0,
       createdAt: now,
       updatedAt: now,
     };
-    await saveSavingsGoal(user.uid, newGoal);
+    await saveSavingsGoal(userId, newGoal);
     await loadGoals();
   };
 
   const updateGoal = async (goal: SavingsGoal) => {
-    if (!user?.uid) return;
+    if (!userId) return;
     const updated = {
       ...goal,
       updatedAt: new Date().toISOString()
     };
-    await saveSavingsGoal(user.uid, updated);
+    await saveSavingsGoal(userId, updated);
     await loadGoals();
   };
 
   const removeGoal = async (goalId: string) => {
-    if (!user?.uid) return;
-    await deleteSavingsGoal(user.uid, goalId);
+    if (!userId) return;
+    await deleteSavingsGoal(userId, goalId);
     await loadGoals();
   };
 
   const allocateFunds = async (goalId: string, accountId: string, amount: number, type: "add" | "withdraw", date: string, note?: string) => {
-    if (!user?.uid) return;
-    await allocateMoneyToGoal(user.uid, goalId, accountId, amount, type, date, note);
+    if (!userId) return;
+    await allocateMoneyToGoal(userId, goalId, accountId, amount, type, date, note);
     await loadGoals();
   };
 

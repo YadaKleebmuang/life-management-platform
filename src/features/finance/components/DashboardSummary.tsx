@@ -43,7 +43,7 @@ export function DashboardSummary() {
     }
   };
 
-  const getTxSign = (amount: number, type: string) => {
+  const getTxSign = (amount: number) => {
     if (amount > 0) return "+";
     if (amount < 0) return "-";
     return "";
@@ -137,7 +137,7 @@ export function DashboardSummary() {
                       <p className="text-xs text-gray-500">{new Date(tx.transactionDate).toLocaleDateString('th-TH')} • {tx.type}</p>
                     </div>
                     <div className={`font-semibold ${getTxColor(tx.type)}`}>
-                      {getTxSign(tx.amount, tx.type)} {formatCurrency(Math.abs(tx.amount))}
+                      {getTxSign(tx.amount)} {formatCurrency(Math.abs(tx.amount))}
                     </div>
                   </div>
                 ))}
