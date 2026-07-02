@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, getDoc, getDocs, query, orderBy, runTransaction, where } from "firebase/firestore";
 import { Transfer, Transaction as AppTransaction, AccountSnapshot, Account } from "../types";
+import { stripUndefinedFields } from "../utils/stripUndefinedFields";
 
 export const getTransfers = async (userId: string): Promise<Transfer[]> => {
   if (!userId) return [];
@@ -51,7 +52,7 @@ export const saveTransfer = async (userId: string, transfer: Transfer): Promise<
 
     // 3. Save Transfer
     const transferRef = doc(db, "users", userId, "transfers", transfer.id);
-    transaction.set(transferRef, transfer);
+    transaction.set(transferRef, stripUndefinedFields(transfer));
 
     // 4. Create Transaction Records (One for deduction, one for addition)
     const txSourceId = crypto.randomUUID();
@@ -85,8 +86,8 @@ export const saveTransfer = async (userId: string, transfer: Transfer): Promise<
       createdAt: now,
     };
 
-    transaction.set(doc(db, "users", userId, "transactions", txSourceId), txSource);
-    transaction.set(doc(db, "users", userId, "transactions", txDestId), txDest);
+    transaction.set(doc(db, "users", userId, "transactions", txSourceId), stripUndefinedFields(txSource));
+    transaction.set(doc(db, "users", userId, "transactions", txDestId), stripUndefinedFields(txDest));
 
     // 5. Create Account Snapshots
     const snapSourceId = crypto.randomUUID();
@@ -116,8 +117,8 @@ export const saveTransfer = async (userId: string, transfer: Transfer): Promise<
       createdAt: now,
     };
 
-    transaction.set(doc(db, "users", userId, "accountSnapshots", snapSourceId), snapSource);
-    transaction.set(doc(db, "users", userId, "accountSnapshots", snapDestId), snapDest);
+    transaction.set(doc(db, "users", userId, "accountSnapshots", snapSourceId), stripUndefinedFields(snapSource));
+    transaction.set(doc(db, "users", userId, "accountSnapshots", snapDestId), stripUndefinedFields(snapDest));
   });
 };
 

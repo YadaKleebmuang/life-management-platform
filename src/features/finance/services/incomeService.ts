@@ -2,6 +2,7 @@ import { db } from "@/lib/firebase";
 import { collection, doc, getDoc, getDocs, query, orderBy, runTransaction, type DocumentReference } from "firebase/firestore";
 import { Income, Transaction as AppTransaction, AccountSnapshot, Account } from "../types";
 import { getRelatedSnapshotRefs, getRelatedTransactionRefs } from "./relatedRecordService";
+import { stripUndefinedFields } from "../utils/stripUndefinedFields";
 
 export const getIncomes = async (userId: string): Promise<Income[]> => {
   if (!userId) return [];
@@ -89,7 +90,7 @@ export const saveIncome = async (userId: string, income: Income): Promise<void> 
       transaction.update(accountRef, { currentBalance: newBalance, updatedAt: now });
     }
 
-    transaction.set(incomeRef, income);
+    transaction.set(incomeRef, stripUndefinedFields(income));
 
     // 4. Create Transaction Record
     const transactionId = crypto.randomUUID();
@@ -106,7 +107,7 @@ export const saveIncome = async (userId: string, income: Income): Promise<void> 
       createdAt: now,
     };
     const txRef = doc(db, "users", userId, "transactions", transactionId);
-    transaction.set(txRef, appTx);
+    transaction.set(txRef, stripUndefinedFields(appTx));
 
     // 5. Create Account Snapshot
     const snapshotId = crypto.randomUUID();
@@ -125,7 +126,7 @@ export const saveIncome = async (userId: string, income: Income): Promise<void> 
       createdAt: now,
     };
     const snapRef = doc(db, "users", userId, "accountSnapshots", snapshotId);
-    transaction.set(snapRef, snapshot);
+    transaction.set(snapRef, stripUndefinedFields(snapshot));
   });
 };
 

@@ -1,14 +1,49 @@
 "use client";
 
+import { useMemo } from "react";
 import { useFinanceData } from "../hooks/useFinanceData";
 import { useCategories } from "../hooks/useCategories";
 import { formatCurrency, formatDateThai } from "../utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, parseISO } from "date-fns";
+import { PaginationControls } from "@/components/ui/pagination";
+import { usePagination } from "@/hooks/usePagination";
 
 export function MonthlySummary() {
   const { incomes, expenses, allocation, loading: financeLoading } = useFinanceData();
   const { categories, loading: categoriesLoading } = useCategories();
+
+  const monthlyData = useMemo<Record<string, { income: number; expense: number; expenseByCategory: Record<string, number> }>>(() => {
+    const nextMonthlyData: Record<string, { income: number; expense: number; expenseByCategory: Record<string, number> }> = {};
+
+    incomes.forEach((inc) => {
+      const monthKey = format(parseISO(inc.date), "yyyy-MM");
+      if (!nextMonthlyData[monthKey]) {
+        nextMonthlyData[monthKey] = { income: 0, expense: 0, expenseByCategory: {} };
+      }
+      nextMonthlyData[monthKey].income += inc.amount;
+    });
+
+    expenses.forEach((exp) => {
+      const monthKey = format(parseISO(exp.date), "yyyy-MM");
+      if (!nextMonthlyData[monthKey]) {
+        nextMonthlyData[monthKey] = { income: 0, expense: 0, expenseByCategory: {} };
+      }
+      nextMonthlyData[monthKey].expense += exp.amount;
+
+      const catId = exp.categoryId || exp.category || "other";
+      if (!nextMonthlyData[monthKey].expenseByCategory[catId]) {
+        nextMonthlyData[monthKey].expenseByCategory[catId] = 0;
+      }
+      nextMonthlyData[monthKey].expenseByCategory[catId] += exp.amount;
+    });
+
+    return nextMonthlyData;
+  }, [expenses, incomes]);
+
+  const sortedMonths = useMemo(() => Object.keys(monthlyData).sort((a, b) => b.localeCompare(a)), [monthlyData]);
+  const monthPagination = usePagination(sortedMonths, 10);
+  const paginatedMonths = monthPagination.paginatedItems;
 
   if (financeLoading || categoriesLoading) {
     return (
@@ -17,34 +52,6 @@ export function MonthlySummary() {
       </div>
     );
   }
-
-  // Group by month
-  const monthlyData: Record<string, { income: number; expense: number; expenseByCategory: Record<string, number> }> = {};
-
-  incomes.forEach((inc) => {
-    const monthKey = format(parseISO(inc.date), "yyyy-MM");
-    if (!monthlyData[monthKey]) {
-      monthlyData[monthKey] = { income: 0, expense: 0, expenseByCategory: {} };
-    }
-    monthlyData[monthKey].income += inc.amount;
-  });
-
-  expenses.forEach((exp) => {
-    const monthKey = format(parseISO(exp.date), "yyyy-MM");
-    if (!monthlyData[monthKey]) {
-      monthlyData[monthKey] = { income: 0, expense: 0, expenseByCategory: {} };
-    }
-    monthlyData[monthKey].expense += exp.amount;
-    
-    // Aggregate by categoryId
-    const catId = exp.categoryId || exp.category || "other";
-    if (!monthlyData[monthKey].expenseByCategory[catId]) {
-      monthlyData[monthKey].expenseByCategory[catId] = 0;
-    }
-    monthlyData[monthKey].expenseByCategory[catId] += exp.amount;
-  });
-
-  const sortedMonths = Object.keys(monthlyData).sort((a, b) => b.localeCompare(a));
   
   const getCategoryName = (id: string) => {
     return categories.find(c => c.id === id)?.name || id;
@@ -77,7 +84,7 @@ export function MonthlySummary() {
                     </td>
                   </tr>
                 ) : (
-                  sortedMonths.map((month) => {
+                  paginatedMonths.map((month) => {
                     const data = monthlyData[month];
                     const balance = data.income - data.expense;
                     const savings = (data.income * allocation.savingsPercentage) / 100;
@@ -110,6 +117,16 @@ export function MonthlySummary() {
               </tbody>
             </table>
           </div>
+          <PaginationControls
+            currentPage={monthPagination.currentPage}
+            totalPages={monthPagination.totalPages}
+            totalItems={monthPagination.totalItems}
+            pageSize={monthPagination.pageSize}
+            startItem={monthPagination.startItem}
+            endItem={monthPagination.endItem}
+            onPageChange={monthPagination.setCurrentPage}
+            label="เดือน"
+          />
         </CardContent>
       </Card>
 

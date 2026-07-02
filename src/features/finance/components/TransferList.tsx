@@ -7,11 +7,15 @@ import { formatCurrency } from "../utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination";
 import { ArrowRightLeft } from "lucide-react";
+import { usePagination } from "@/hooks/usePagination";
 
 export function TransferList() {
   const { transfers, addTransfer, loading: transfersLoading } = useTransfers();
   const { activeAccounts, loading: accountsLoading } = useAccounts();
+  const transferPagination = usePagination(transfers, 10);
+  const paginatedTransfers = transferPagination.paginatedItems;
   
   const [transferDate, setTransferDate] = useState(new Date().toISOString().split("T")[0]);
   const [fromAccountId, setFromAccountId] = useState("");
@@ -180,14 +184,14 @@ export function TransferList() {
                       กำลังโหลดข้อมูล...
                     </td>
                   </tr>
-                ) : transfers.length === 0 ? (
+                ) : paginatedTransfers.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
                       ยังไม่มีประวัติการโอนเงิน
                     </td>
                   </tr>
                 ) : (
-                  transfers.map((t) => (
+                  paginatedTransfers.map((t) => (
                     <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-gray-900">{new Date(t.transferDate).toLocaleDateString("th-TH")}</td>
                       <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{t.note || "-"}</td>
@@ -208,6 +212,16 @@ export function TransferList() {
               </tbody>
             </table>
           </div>
+          <PaginationControls
+            currentPage={transferPagination.currentPage}
+            totalPages={transferPagination.totalPages}
+            totalItems={transferPagination.totalItems}
+            pageSize={transferPagination.pageSize}
+            startItem={transferPagination.startItem}
+            endItem={transferPagination.endItem}
+            onPageChange={transferPagination.setCurrentPage}
+            label="รายการโอนเงิน"
+          />
         </CardContent>
       </Card>
     </div>

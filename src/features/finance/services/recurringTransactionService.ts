@@ -2,6 +2,7 @@ import { db } from "@/lib/firebase";
 import { collection, doc, getDocs, getDoc, query, orderBy, setDoc, runTransaction, where, writeBatch } from "firebase/firestore";
 import { RecurringTransaction, Income, Expense, Account, AccountSnapshot, Transaction as AppTransaction } from "../types";
 import { getAllocation } from "./budgetService";
+import { stripUndefinedFields } from "../utils/stripUndefinedFields";
 
 export const getRecurringTransactions = async (userId: string): Promise<RecurringTransaction[]> => {
   if (!userId) return [];
@@ -20,7 +21,7 @@ export const getRecurringTransactions = async (userId: string): Promise<Recurrin
 export const saveRecurringTransaction = async (userId: string, tx: RecurringTransaction): Promise<void> => {
   if (!userId) return;
   const docRef = doc(db, "users", userId, "recurringTransactions", tx.id);
-  await setDoc(docRef, tx);
+  await setDoc(docRef, stripUndefinedFields(tx));
 };
 
 export const deleteRecurringTransaction = async (userId: string, txId: string): Promise<void> => {
@@ -114,7 +115,7 @@ export const processRecurringTransactions = async (userId: string): Promise<numb
     // Check end date if exists
     if (recurringTx.endDate && recurringTx.nextRunDate > recurringTx.endDate) {
       // Mark as inactive if passed end date
-      await setDoc(docRef(userId, recurringTx.id), { ...recurringTx, isActive: false });
+      await setDoc(docRef(userId, recurringTx.id), stripUndefinedFields({ ...recurringTx, isActive: false }));
       continue;
     }
     
@@ -175,7 +176,7 @@ export const processRecurringTransactions = async (userId: string): Promise<numb
               recurringTransactionId: recurringTx.id,
               createdAt: now,
             };
-            transaction.set(doc(db, "users", userId, "incomes", recordId), newIncome);
+            transaction.set(doc(db, "users", userId, "incomes", recordId), stripUndefinedFields(newIncome));
             
             transaction.update(accountRef, { currentBalance: newBalance, updatedAt: now });
             
@@ -193,7 +194,7 @@ export const processRecurringTransactions = async (userId: string): Promise<numb
               recurringTransactionId: recurringTx.id,
               createdAt: now,
             };
-            transaction.set(doc(db, "users", userId, "transactions", appTxId), appTx);
+            transaction.set(doc(db, "users", userId, "transactions", appTxId), stripUndefinedFields(appTx));
             
             const snapId = crypto.randomUUID();
             const snapshot: AccountSnapshot = {
@@ -208,7 +209,7 @@ export const processRecurringTransactions = async (userId: string): Promise<numb
               recurringTransactionId: recurringTx.id,
               createdAt: now,
             };
-            transaction.set(doc(db, "users", userId, "accountSnapshots", snapId), snapshot);
+            transaction.set(doc(db, "users", userId, "accountSnapshots", snapId), stripUndefinedFields(snapshot));
           }
         } else {
           const accountRef = doc(db, "users", userId, "accounts", recurringTx.accountId);
@@ -245,7 +246,7 @@ export const processRecurringTransactions = async (userId: string): Promise<numb
               recurringTransactionId: recurringTx.id,
               createdAt: now,
             };
-            transaction.set(doc(db, "users", userId, "incomes", recordId), newIncome);
+            transaction.set(doc(db, "users", userId, "incomes", recordId), stripUndefinedFields(newIncome));
           } else {
             newBalance -= recurringTx.amount;
             finalTxAmount = -recurringTx.amount;
@@ -262,7 +263,7 @@ export const processRecurringTransactions = async (userId: string): Promise<numb
               recurringTransactionId: recurringTx.id,
               createdAt: now,
             };
-            transaction.set(doc(db, "users", userId, "expenses", recordId), newExpense);
+            transaction.set(doc(db, "users", userId, "expenses", recordId), stripUndefinedFields(newExpense));
           }
           
           // 2. Update Account
@@ -283,7 +284,7 @@ export const processRecurringTransactions = async (userId: string): Promise<numb
             recurringTransactionId: recurringTx.id,
             createdAt: now,
           };
-          transaction.set(doc(db, "users", userId, "transactions", appTxId), appTx);
+          transaction.set(doc(db, "users", userId, "transactions", appTxId), stripUndefinedFields(appTx));
           
           // 4. Create Account Snapshot
           const snapId = crypto.randomUUID();
@@ -299,7 +300,7 @@ export const processRecurringTransactions = async (userId: string): Promise<numb
             recurringTransactionId: recurringTx.id,
             createdAt: now,
           };
-          transaction.set(doc(db, "users", userId, "accountSnapshots", snapId), snapshot);
+          transaction.set(doc(db, "users", userId, "accountSnapshots", snapId), stripUndefinedFields(snapshot));
         }
         
         // 5. Update Recurring Transaction (calculate next run date)

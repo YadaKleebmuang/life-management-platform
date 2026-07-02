@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination";
 import { useAuth } from "@/features/auth/contexts/AuthContext";
 import { useAccounts } from "@/features/finance/hooks/useAccounts";
 import { useCategories } from "@/features/finance/hooks/useCategories";
@@ -28,6 +29,7 @@ import { calculateTransactionSummary } from "@/features/finance/utils/finance-ca
 import { formatCurrency, formatDateThai } from "@/features/finance/utils/formatters";
 import { notifyFinanceChanged } from "@/features/finance/utils/financeEvents";
 import { cn } from "@/lib/utils";
+import { usePagination } from "@/hooks/usePagination";
 import type { Expense, Income, Transfer } from "@/features/finance/types";
 
 type TransactionTab = "all" | "income" | "expense" | "transfer";
@@ -259,6 +261,8 @@ export function TransactionManagementBoard() {
       return matchesTab && matchesSearch && matchesAccount && matchesCategory && matchesDateFrom && matchesDateTo;
     });
   }, [accountFilter, categoryFilter, dateFrom, dateTo, rows, searchQuery, transactionTab]);
+  const transactionPagination = usePagination(filteredRows, 10);
+  const paginatedRows = transactionPagination.paginatedItems;
 
   const openCreateModal = (type?: TransactionKind) => {
     const nextType = type ?? (transactionTab === "all" ? "income" : transactionTab);
@@ -774,17 +778,17 @@ export function TransactionManagementBoard() {
         </CardHeader>
         <CardContent className="pt-5">
           <div className="lg:hidden grid gap-3">
-            {filteredRows.length === 0 ? (
+            {paginatedRows.length === 0 ? (
               <EmptyState />
             ) : (
-              filteredRows.map((row) => (
+              paginatedRows.map((row) => (
                 <TransactionMobileCard key={`${row.type}-${row.id}`} row={row} onEdit={() => openEditModal(row)} onDelete={() => void handleDelete(row)} />
               ))
             )}
           </div>
 
           <div className="hidden lg:block">
-            {filteredRows.length === 0 ? (
+            {paginatedRows.length === 0 ? (
               <EmptyState />
             ) : (
               <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
@@ -802,7 +806,7 @@ export function TransactionManagementBoard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 bg-white">
-                    {filteredRows.map((row) => (
+                    {paginatedRows.map((row) => (
                       <tr key={`${row.type}-${row.id}`} className="align-top hover:bg-gray-50/60">
                         <Td>{formatDateThai(row.date)}</Td>
                         <Td>
@@ -845,6 +849,16 @@ export function TransactionManagementBoard() {
               </div>
             )}
           </div>
+          <PaginationControls
+            currentPage={transactionPagination.currentPage}
+            totalPages={transactionPagination.totalPages}
+            totalItems={transactionPagination.totalItems}
+            pageSize={transactionPagination.pageSize}
+            startItem={transactionPagination.startItem}
+            endItem={transactionPagination.endItem}
+            onPageChange={transactionPagination.setCurrentPage}
+            label="รายการธุรกรรม"
+          />
         </CardContent>
       </Card>
     </div>

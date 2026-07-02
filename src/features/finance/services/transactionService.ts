@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, getDocs, setDoc, query, orderBy } from "firebase/firestore";
 import { Transaction } from "../types";
+import { stripUndefinedFields } from "../utils/stripUndefinedFields";
 
 export const getTransactions = async (userId: string): Promise<Transaction[]> => {
   if (!userId) return [];
@@ -21,5 +22,5 @@ export const getTransactions = async (userId: string): Promise<Transaction[]> =>
 export const saveTransaction = async (userId: string, transaction: Transaction): Promise<void> => {
   if (!userId) return;
   const docRef = doc(db, "users", userId, "transactions", transaction.id);
-  await setDoc(docRef, transaction);
+  await setDoc(docRef, stripUndefinedFields(transaction));
 };

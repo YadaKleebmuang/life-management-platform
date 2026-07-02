@@ -1,10 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { X, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PaginationControls } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatDateThai } from "@/features/finance/utils/formatters";
+import { usePagination } from "@/hooks/usePagination";
 import type { WorkItem, WorkPayment } from "../types";
 import {
   buildParticipantPaymentSummary,
@@ -34,10 +37,13 @@ const paymentTypeClasses = {
 } as const;
 
 export function WorkDetailModal({ item, payments, onClose }: WorkDetailModalProps) {
-  const participantSummaries = item.participants.map((participant) =>
-    buildParticipantPaymentSummary(participant, payments)
+  const participantSummaries = useMemo(
+    () => item.participants.map((participant) => buildParticipantPaymentSummary(participant, payments)),
+    [item.participants, payments]
   );
-  const paymentHistory = buildWorkPaymentHistory(payments);
+  const paymentHistory = useMemo(() => buildWorkPaymentHistory(payments), [payments]);
+  const participantPagination = usePagination(participantSummaries, 10);
+  const paymentPagination = usePagination(paymentHistory, 10);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4">
@@ -139,25 +145,43 @@ export function WorkDetailModal({ item, payments, onClose }: WorkDetailModalProp
                       </tr>
                     </thead>
                     <tbody>
-                      {participantSummaries.map((summary) => (
-                        <tr key={summary.participantId} className="border-b border-gray-50">
-                          <td className="px-3 py-3 font-medium text-gray-900">{summary.participantName}</td>
-                          <td className="px-3 py-3 text-right">{formatCurrency(summary.requiredAmount)}</td>
-                          <td className="px-3 py-3 text-right">{formatCurrency(summary.depositPaidAmount)}</td>
-                          <td className="px-3 py-3 text-right">{formatCurrency(summary.remainingPaidAmount)}</td>
-                          <td className="px-3 py-3 text-right">{formatCurrency(summary.revisionPaidAmount)}</td>
-                          <td className="px-3 py-3 text-right font-semibold text-gray-900">{formatCurrency(summary.totalPaidAmount)}</td>
-                          <td className="px-3 py-3 text-right font-semibold text-red-600">{formatCurrency(Math.max(0, summary.remainingAmount))}</td>
-                          <td className="px-3 py-3">
-                            <span className={cn("inline-flex rounded-full px-2.5 py-1 text-xs font-medium", financialBadgeClasses[summary.financialStatus])}>
-                              {summary.financialStatus}
-                            </span>
+                      {participantPagination.paginatedItems.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="px-3 py-8 text-center text-gray-500">
+                            ไม่มีข้อมูลผู้รับงาน
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        participantPagination.paginatedItems.map((summary) => (
+                          <tr key={summary.participantId} className="border-b border-gray-50">
+                            <td className="px-3 py-3 font-medium text-gray-900">{summary.participantName}</td>
+                            <td className="px-3 py-3 text-right">{formatCurrency(summary.requiredAmount)}</td>
+                            <td className="px-3 py-3 text-right">{formatCurrency(summary.depositPaidAmount)}</td>
+                            <td className="px-3 py-3 text-right">{formatCurrency(summary.remainingPaidAmount)}</td>
+                            <td className="px-3 py-3 text-right">{formatCurrency(summary.revisionPaidAmount)}</td>
+                            <td className="px-3 py-3 text-right font-semibold text-gray-900">{formatCurrency(summary.totalPaidAmount)}</td>
+                            <td className="px-3 py-3 text-right font-semibold text-red-600">{formatCurrency(Math.max(0, summary.remainingAmount))}</td>
+                            <td className="px-3 py-3">
+                              <span className={cn("inline-flex rounded-full px-2.5 py-1 text-xs font-medium", financialBadgeClasses[summary.financialStatus])}>
+                                {summary.financialStatus}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
+                <PaginationControls
+                  currentPage={participantPagination.currentPage}
+                  totalPages={participantPagination.totalPages}
+                  totalItems={participantPagination.totalItems}
+                  pageSize={participantPagination.pageSize}
+                  startItem={participantPagination.startItem}
+                  endItem={participantPagination.endItem}
+                  onPageChange={participantPagination.setCurrentPage}
+                  label="รายการผู้รับงาน"
+                />
               </CardContent>
             </Card>
 
@@ -179,14 +203,14 @@ export function WorkDetailModal({ item, payments, onClose }: WorkDetailModalProp
                       </tr>
                     </thead>
                     <tbody>
-                      {paymentHistory.length === 0 ? (
+                      {paymentPagination.paginatedItems.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="px-3 py-8 text-center text-gray-500">
                             ยังไม่มีประวัติการจ่าย
                           </td>
                         </tr>
                       ) : (
-                        paymentHistory.map((payment) => (
+                        paymentPagination.paginatedItems.map((payment) => (
                           <tr key={payment.id} className="border-b border-gray-50">
                             <td className="px-3 py-3 text-gray-700">{payment.paymentDate ? formatDateThai(payment.paymentDate) : "-"}</td>
                             <td className="px-3 py-3 font-medium text-gray-900">{payment.participantName || payment.clientName || "-"}</td>
@@ -213,6 +237,16 @@ export function WorkDetailModal({ item, payments, onClose }: WorkDetailModalProp
                     </tbody>
                   </table>
                 </div>
+                <PaginationControls
+                  currentPage={paymentPagination.currentPage}
+                  totalPages={paymentPagination.totalPages}
+                  totalItems={paymentPagination.totalItems}
+                  pageSize={paymentPagination.pageSize}
+                  startItem={paymentPagination.startItem}
+                  endItem={paymentPagination.endItem}
+                  onPageChange={paymentPagination.setCurrentPage}
+                  label="ประวัติการจ่าย"
+                />
               </CardContent>
             </Card>
           </CardContent>

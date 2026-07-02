@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, getDocs, query, orderBy, setDoc, deleteDoc, runTransaction } from "firebase/firestore";
 import { SavingsGoal, GoalAllocation } from "../types";
+import { stripUndefinedFields } from "../utils/stripUndefinedFields";
 
 export const getSavingsGoals = async (userId: string): Promise<SavingsGoal[]> => {
   if (!userId) return [];
@@ -33,7 +34,7 @@ export const getGoalAllocations = async (userId: string, goalId: string): Promis
 export const saveSavingsGoal = async (userId: string, goal: SavingsGoal): Promise<void> => {
   if (!userId) return;
   const docRef = doc(db, "users", userId, "savingsGoals", goal.id);
-  await setDoc(docRef, goal);
+  await setDoc(docRef, stripUndefinedFields(goal));
 };
 
 export const deleteSavingsGoal = async (userId: string, goalId: string): Promise<void> => {
@@ -95,6 +96,6 @@ export const allocateMoneyToGoal = async (
       createdAt: new Date().toISOString(),
     };
     
-    transaction.set(allocationRef, allocation);
+    transaction.set(allocationRef, stripUndefinedFields(allocation));
   });
 };

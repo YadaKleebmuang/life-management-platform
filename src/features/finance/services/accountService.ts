@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, getDocs, setDoc, query, orderBy, deleteDoc } from "firebase/firestore";
 import { Account } from "../types";
+import { stripUndefinedFields } from "../utils/stripUndefinedFields";
 
 export const getAccounts = async (userId: string): Promise<Account[]> => {
   if (!userId) return [];
@@ -19,7 +20,7 @@ export const getAccounts = async (userId: string): Promise<Account[]> => {
 export const saveAccount = async (userId: string, account: Account): Promise<void> => {
   if (!userId) return;
   const docRef = doc(db, "users", userId, "accounts", account.id);
-  await setDoc(docRef, account);
+  await setDoc(docRef, stripUndefinedFields(account));
 };
 
 export const deleteAccount = async (userId: string, accountId: string): Promise<void> => {

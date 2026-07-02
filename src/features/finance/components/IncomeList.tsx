@@ -8,13 +8,17 @@ import { formatCurrency } from "../utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination";
 import type { Income } from "../types";
+import { usePagination } from "@/hooks/usePagination";
 import { Trash2, Edit2 } from "lucide-react";
 
 export function IncomeList() {
   const { incomes, addIncome, removeIncome, updateIncome, loading: financeLoading } = useFinanceData();
   const { activeAccounts, loading: accountsLoading } = useAccounts();
   const { activeIncomeCategories, loading: categoriesLoading } = useCategories();
+  const incomePagination = usePagination(incomes, 10);
+  const paginatedIncomes = incomePagination.paginatedItems;
   
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [title, setTitle] = useState("");
@@ -213,14 +217,14 @@ export function IncomeList() {
                       กำลังโหลดข้อมูล...
                     </td>
                   </tr>
-                ) : incomes.length === 0 ? (
+                ) : paginatedIncomes.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                       ยังไม่มีข้อมูลรายรับ
                     </td>
                   </tr>
                 ) : (
-                  incomes.map((income) => (
+                  paginatedIncomes.map((income) => (
                     <tr key={income.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-gray-900">{new Date(income.date).toLocaleDateString("th-TH")}</td>
                       <td className="px-4 py-3 text-gray-900">
@@ -249,6 +253,16 @@ export function IncomeList() {
               </tbody>
             </table>
           </div>
+          <PaginationControls
+            currentPage={incomePagination.currentPage}
+            totalPages={incomePagination.totalPages}
+            totalItems={incomePagination.totalItems}
+            pageSize={incomePagination.pageSize}
+            startItem={incomePagination.startItem}
+            endItem={incomePagination.endItem}
+            onPageChange={incomePagination.setCurrentPage}
+            label="รายการรายรับ"
+          />
         </CardContent>
       </Card>
     </div>

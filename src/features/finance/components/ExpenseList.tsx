@@ -8,13 +8,17 @@ import { formatCurrency } from "../utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination";
 import type { Expense } from "../types";
+import { usePagination } from "@/hooks/usePagination";
 import { Trash2, Edit2 } from "lucide-react";
 
 export function ExpenseList() {
   const { expenses, addExpense, removeExpense, updateExpense, loading: financeLoading } = useFinanceData();
   const { activeAccounts, loading: accountsLoading } = useAccounts();
   const { activeExpenseCategories, loading: categoriesLoading } = useCategories();
+  const expensePagination = usePagination(expenses, 10);
+  const paginatedExpenses = expensePagination.paginatedItems;
   
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [title, setTitle] = useState("");
@@ -204,14 +208,14 @@ export function ExpenseList() {
                       กำลังโหลดข้อมูล...
                     </td>
                   </tr>
-                ) : expenses.length === 0 ? (
+                ) : paginatedExpenses.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                       ยังไม่มีข้อมูลรายจ่าย
                     </td>
                   </tr>
                 ) : (
-                  expenses.map((expense) => (
+                  paginatedExpenses.map((expense) => (
                     <tr key={expense.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-gray-900">{new Date(expense.date).toLocaleDateString("th-TH")}</td>
                       <td className="px-4 py-3 text-gray-900">
@@ -244,6 +248,16 @@ export function ExpenseList() {
               </tbody>
             </table>
           </div>
+          <PaginationControls
+            currentPage={expensePagination.currentPage}
+            totalPages={expensePagination.totalPages}
+            totalItems={expensePagination.totalItems}
+            pageSize={expensePagination.pageSize}
+            startItem={expensePagination.startItem}
+            endItem={expensePagination.endItem}
+            onPageChange={expensePagination.setCurrentPage}
+            label="รายการรายจ่าย"
+          />
         </CardContent>
       </Card>
     </div>

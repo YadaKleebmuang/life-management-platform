@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, writeBatch } from "firebase/firestore";
 import { Category } from "../types";
+import { stripUndefinedFields } from "../utils/stripUndefinedFields";
 
 const defaultIncomeCategories = ["Salary", "Family", "Freelance", "Gift", "Other"];
 const defaultExpenseCategories = ["Food", "Travel", "Education", "Shopping", "Health", "Entertainment", "Bills", "Other"];
@@ -22,7 +23,7 @@ export const getCategories = async (userId: string): Promise<Category[]> => {
 export const saveCategory = async (userId: string, category: Category): Promise<void> => {
   if (!userId) return;
   const docRef = doc(db, "users", userId, "categories", category.id);
-  await setDoc(docRef, category);
+  await setDoc(docRef, stripUndefinedFields(category));
 };
 
 export const deleteCategory = async (userId: string, categoryId: string): Promise<void> => {
@@ -52,7 +53,7 @@ export const initializeDefaultCategories = async (userId: string): Promise<Categ
     };
     categories.push(cat);
     const docRef = doc(db, "users", userId, "categories", id);
-    batch.set(docRef, cat);
+    batch.set(docRef, stripUndefinedFields(cat));
   });
 
   defaultExpenseCategories.forEach(name => {
@@ -69,7 +70,7 @@ export const initializeDefaultCategories = async (userId: string): Promise<Categ
     };
     categories.push(cat);
     const docRef = doc(db, "users", userId, "categories", id);
-    batch.set(docRef, cat);
+    batch.set(docRef, stripUndefinedFields(cat));
   });
 
   await batch.commit();

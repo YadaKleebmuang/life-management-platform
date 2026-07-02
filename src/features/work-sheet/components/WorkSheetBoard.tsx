@@ -19,11 +19,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination";
 import { formatCurrency, formatDateThai } from "@/features/finance/utils/formatters";
 import { cn } from "@/lib/utils";
 import { useWorkSheet } from "../hooks/useWorkSheet";
 import { WorkDetailModal } from "./WorkDetailModal";
 import { buildWorkSheetPreview, splitAmountEvenly } from "../utils/work-calculations";
+import { usePagination } from "@/hooks/usePagination";
 import type { FinancialStatus, PaymentType, WorkItem, WorkItemClientDraft, WorkItemDraft, WorkItemStatus } from "../types";
 
 const defaultToday = new Date().toISOString().split("T")[0];
@@ -121,6 +123,8 @@ export function WorkSheetBoard() {
       return matchesQuery && matchesFinancial && matchesDate;
     });
   }, [financialFilter, items, searchQuery, workDateFilter]);
+  const workPagination = usePagination(filteredItems, 10);
+  const paginatedItems = workPagination.paginatedItems;
 
   const totals = useMemo(
     () =>
@@ -626,15 +630,15 @@ export function WorkSheetBoard() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="lg:hidden space-y-3">
-            {filteredItems.length === 0 ? (
+            {paginatedItems.length === 0 ? (
               <EmptyState />
             ) : (
-              filteredItems.map((item) => <WorkCard key={item.id} item={item} onView={() => setSelectedDetailItemId(item.id)} onPay={() => openPaymentTarget(item)} onEdit={() => openEditForm(item)} onDelete={() => removeItem(item.id)} />)
+              paginatedItems.map((item) => <WorkCard key={item.id} item={item} onView={() => setSelectedDetailItemId(item.id)} onPay={() => openPaymentTarget(item)} onEdit={() => openEditForm(item)} onDelete={() => removeItem(item.id)} />)
             )}
           </div>
 
           <div className="hidden lg:block">
-            {filteredItems.length === 0 ? (
+            {paginatedItems.length === 0 ? (
               <EmptyState />
             ) : (
               <div className="overflow-hidden rounded-2xl border border-gray-200">
@@ -652,7 +656,7 @@ export function WorkSheetBoard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 bg-white">
-                    {filteredItems.map((item) => (
+                    {paginatedItems.map((item) => (
                       <tr key={item.id} className="align-top hover:bg-gray-50/60">
                         <Td>{item.workDate ? formatDateThai(item.workDate) : "-"}</Td>
                         <Td>
@@ -698,6 +702,16 @@ export function WorkSheetBoard() {
               </div>
             )}
           </div>
+          <PaginationControls
+            currentPage={workPagination.currentPage}
+            totalPages={workPagination.totalPages}
+            totalItems={workPagination.totalItems}
+            pageSize={workPagination.pageSize}
+            startItem={workPagination.startItem}
+            endItem={workPagination.endItem}
+            onPageChange={workPagination.setCurrentPage}
+            label="รายการงาน"
+          />
         </CardContent>
       </Card>
     </div>

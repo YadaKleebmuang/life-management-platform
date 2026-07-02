@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, getDocs, query, orderBy, runTransaction, where } from "firebase/firestore";
 import { Debt, DebtRepayment, Transaction as AppTransaction, AccountSnapshot, Account, DebtStatus } from "../types";
+import { stripUndefinedFields } from "../utils/stripUndefinedFields";
 
 export const getDebts = async (userId: string): Promise<Debt[]> => {
   if (!userId) return [];
@@ -64,7 +65,7 @@ export const saveDebt = async (userId: string, debt: Debt): Promise<void> => {
 
     // 2. Save Debt
     const debtRef = doc(db, "users", userId, "debts", debt.id);
-    transaction.set(debtRef, debt);
+    transaction.set(debtRef, stripUndefinedFields(debt));
 
     // 3. Create Transaction Record
     const txId = crypto.randomUUID();
@@ -80,7 +81,7 @@ export const saveDebt = async (userId: string, debt: Debt): Promise<void> => {
       transactionDate: now,
       createdAt: now,
     };
-    transaction.set(doc(db, "users", userId, "transactions", txId), appTx);
+    transaction.set(doc(db, "users", userId, "transactions", txId), stripUndefinedFields(appTx));
 
     // 4. Create Account Snapshot
     const snapId = crypto.randomUUID();
@@ -95,7 +96,7 @@ export const saveDebt = async (userId: string, debt: Debt): Promise<void> => {
       sourceId: debt.id,
       createdAt: now,
     };
-    transaction.set(doc(db, "users", userId, "accountSnapshots", snapId), snapshot);
+    transaction.set(doc(db, "users", userId, "accountSnapshots", snapId), stripUndefinedFields(snapshot));
   });
 };
 
@@ -163,7 +164,7 @@ export const repayDebt = async (userId: string, repayment: DebtRepayment): Promi
 
     // 5. Save Repayment record
     const repaymentRef = doc(db, "users", userId, "debtRepayments", repayment.id);
-    transaction.set(repaymentRef, repayment);
+    transaction.set(repaymentRef, stripUndefinedFields(repayment));
 
     // 6. Create Transaction Record
     const txId = crypto.randomUUID();
@@ -179,7 +180,7 @@ export const repayDebt = async (userId: string, repayment: DebtRepayment): Promi
       transactionDate: repayment.repaymentDate,
       createdAt: now,
     };
-    transaction.set(doc(db, "users", userId, "transactions", txId), appTx);
+    transaction.set(doc(db, "users", userId, "transactions", txId), stripUndefinedFields(appTx));
 
     // 7. Create Account Snapshot
     const snapId = crypto.randomUUID();
@@ -194,6 +195,6 @@ export const repayDebt = async (userId: string, repayment: DebtRepayment): Promi
       sourceId: repayment.id,
       createdAt: now,
     };
-    transaction.set(doc(db, "users", userId, "accountSnapshots", snapId), snapshot);
+    transaction.set(doc(db, "users", userId, "accountSnapshots", snapId), stripUndefinedFields(snapshot));
   });
 };

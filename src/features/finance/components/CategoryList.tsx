@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCategories } from "../hooks/useCategories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination";
 import { Category, CategoryType } from "../types";
 import { Edit2, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
+import { usePagination, type PaginationResult } from "@/hooks/usePagination";
 
 export function CategoryList() {
   const { categories, addCategory, updateCategory, toggleCategoryActive, removeCategory, loading } = useCategories();
@@ -57,10 +59,15 @@ export function CategoryList() {
     setDescription("");
   };
 
-  const incomeCategories = categories.filter(c => c.type === "income");
-  const expenseCategories = categories.filter(c => c.type === "expense");
+  const incomeCategories = useMemo(() => categories.filter((c) => c.type === "income"), [categories]);
+  const expenseCategories = useMemo(() => categories.filter((c) => c.type === "expense"), [categories]);
+  const expensePagination = usePagination(expenseCategories, 10);
+  const incomePagination = usePagination(incomeCategories, 10);
 
-  const renderTable = (cats: Category[], title: string) => (
+  const renderTable = (
+    title: string,
+    pagination: PaginationResult<Category>
+  ) => (
     <div className="mt-8">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
       <div className="overflow-x-auto">
@@ -74,14 +81,14 @@ export function CategoryList() {
             </tr>
           </thead>
           <tbody>
-            {cats.length === 0 ? (
+            {pagination.paginatedItems.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
                   ไม่มีข้อมูลหมวดหมู่
                 </td>
               </tr>
             ) : (
-              cats.map((cat) => (
+              pagination.paginatedItems.map((cat) => (
                 <tr key={cat.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="px-4 py-3 text-gray-900 font-medium">
                     {cat.name}
@@ -125,6 +132,16 @@ export function CategoryList() {
           </tbody>
         </table>
       </div>
+      <PaginationControls
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        totalItems={pagination.totalItems}
+        pageSize={pagination.pageSize}
+        startItem={pagination.startItem}
+        endItem={pagination.endItem}
+        onPageChange={pagination.setCurrentPage}
+        label={title}
+      />
     </div>
   );
 
@@ -202,8 +219,8 @@ export function CategoryList() {
           <CardTitle>รายการหมวดหมู่ทั้งหมด</CardTitle>
         </CardHeader>
         <CardContent>
-          {renderTable(expenseCategories, "หมวดหมู่รายจ่าย")}
-          {renderTable(incomeCategories, "หมวดหมู่รายรับ")}
+          {renderTable("หมวดหมู่รายจ่าย", expensePagination)}
+          {renderTable("หมวดหมู่รายรับ", incomePagination)}
         </CardContent>
       </Card>
     </div>
