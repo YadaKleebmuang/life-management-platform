@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Account, AccountType } from "../types";
-import { Edit2, ToggleLeft, ToggleRight, Wallet, Building2, Smartphone, PiggyBank, Plus } from "lucide-react";
+import { Edit2, ToggleLeft, ToggleRight, Wallet, Building2, Smartphone, PiggyBank, Plus, Trash2 } from "lucide-react";
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("th-TH", {
@@ -16,7 +16,7 @@ const formatCurrency = (amount: number) => {
 };
 
 export function AccountList() {
-  const { accounts, addAccount, updateAccount, toggleAccountActive, loading } = useAccounts();
+  const { accounts, addAccount, updateAccount, toggleAccountActive, removeAccount, loading } = useAccounts();
   
   const [accountName, setAccountName] = useState("");
   const [accountType, setAccountType] = useState<AccountType>("Cash");
@@ -39,13 +39,17 @@ export function AccountList() {
       if (editingId) {
         const existing = accounts.find(a => a.id === editingId);
         if (existing) {
-          // Note: Cannot edit initialBalance easily without recalculating all transactions. 
-          // For now, we only update metadata.
+          const newInitialBalance = parseFloat(initialBalance) || 0;
+          const diff = newInitialBalance - existing.initialBalance;
+          const newCurrentBalance = existing.currentBalance + diff;
+          
           await updateAccount({ 
             ...existing, 
             accountName, 
             accountType, 
             institutionName,
+            initialBalance: newInitialBalance,
+            currentBalance: newCurrentBalance,
             note,
             currency
           });
@@ -84,6 +88,12 @@ export function AccountList() {
     setCurrency(account.currency);
     setNote(account.note || "");
     setShowForm(true);
+  };
+
+  const handleDelete = async (account: Account) => {
+    if (window.confirm(`คุณต้องการลบบัญชี "${account.accountName}" ใช่หรือไม่?\n\nการลบบัญชีจะไม่ลบข้อมูลธุรกรรมที่เกี่ยวข้อง แต่อาจทำให้การแสดงผลข้อมูลบางส่วนไม่สมบูรณ์`)) {
+      await removeAccount(account.id);
+    }
   };
 
   const resetForm = () => {
@@ -188,10 +198,8 @@ export function AccountList() {
                   placeholder="0.00"
                   value={initialBalance}
                   onChange={(e) => setInitialBalance(e.target.value)}
-                  disabled={!!editingId} // Prevent editing initial balance to avoid messing up current balance
                   required
                 />
-                {editingId && <p className="text-xs text-gray-500">ยอดยกมาไม่สามารถแก้ไขได้หลังสร้างบัญชีแล้ว</p>}
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -241,11 +249,14 @@ export function AccountList() {
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(account)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(account)} title="แก้ไขบัญชี">
                     <Edit2 className="h-4 w-4 text-gray-400 hover:text-gray-900" />
                   </Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleAccountActive(account)} title={account.isActive ? "ระงับบัญชี" : "เปิดใช้บัญชี"}>
                     {account.isActive ? <ToggleRight className="h-4 w-4 text-gray-900" /> : <ToggleLeft className="h-4 w-4 text-gray-400" />}
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(account)} title="ลบบัญชี">
+                    <Trash2 className="h-4 w-4 text-red-400 hover:text-red-600" />
                   </Button>
                 </div>
               </div>
